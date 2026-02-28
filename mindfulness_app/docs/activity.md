@@ -4,6 +4,27 @@ This file tracks progress across all coding sessions, following the "Effective H
 
 ## 🕒 Latest Activity
 
+### Session: 2026-02-28 (tree_gn_integration)
+**Objective**: Integrate the `tree_gn.glb` 3D model into the app.
+
+**Actions Taken**:
+- [x] Added `assets/3D/tree_gn.glb` to `pubspec.yaml` assets section.
+- [x] Updated `ZenTreeRenderer` to reference `tree_gn.glb` instead of `maple_tree.glb`.
+- [x] Built web release successfully (no shader errors).
+- [x] Captured screenshot (`screenshots/tree_gn_integration.png`).
+
+**Files Modified**:
+- `pubspec.yaml` — Added `tree_gn.glb` asset declaration.
+- `lib/widgets/zen_tree_renderer.dart` — Changed model `src` to `assets/3D/tree_gn.glb`.
+
+**Screenshot**: `screenshots/tree_gn_integration.png`
+
+**Status**:
+- **Build**: Clean, no shader errors.
+- **Next Feature**: `dynamic_scaling_animation`.
+
+---
+
 ### Session: 2026-02-28 (fifo_presence_logic)
 **Objective**: Implement FIFO Presence Level mechanic in `ProgressService`.
 
@@ -53,7 +74,7 @@ This file tracks progress across all coding sessions, following the "Effective H
 | Feature ID | Category | Status | Notes |
 | :--- | :--- | :--- | :--- |
 | `fifo_presence_logic` | Mechanics | 🟢 Done | Implemented FIFO queue in ProgressService. |
-| `tree_gn_integration` | 3D Rendering | 🔴 Pending | Requires `pubspec.yaml` update. |
+| `tree_gn_integration` | 3D Rendering | 🟢 Done | Model integrated into ZenTreeRenderer. |
 | `dynamic_scaling` | 3D Rendering | 🔴 Pending | Requires `AnimatedScale` logic. |
 | `legacy_forest_grid` | UI/UX | 🔴 Pending | Bento-grid with premium checks. |
 | `tree_interaction` | UI/UX | 🔴 Pending | Glassmorphic session insights. |
@@ -66,3 +87,4 @@ This file tracks progress across all coding sessions, following the "Effective H
 | :--- | :--- | :--- |
 | 2026-02-28 | Environment Setup | `plan.md`, `zen-forest-features.json` |
 | 2026-02-28 | `fifo_presence_logic` implemented | `progress_service.dart`, `progress_service_presence_test.dart`, `screenshots/fifo_presence_logic.png` |
+| 2026-02-28 | `tree_gn_integration` implemented | `pubspec.yaml`, `zen_tree_renderer.dart`, `screenshots/tree_gn_integration.png` |

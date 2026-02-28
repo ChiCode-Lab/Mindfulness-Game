@@ -66,6 +66,7 @@ flutter:
     - assets/audio/
     - assets/3D/Meshy_AI_Crimson_Ember_Lamp_0226174821_texture.glb
     - assets/3D/maple_tree.glb
+    - assets/3D/tree_gn.glb
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -47,7 +47,7 @@ class _ZenTreeRendererState extends State<ZenTreeRenderer> with SingleTickerProv
           child: Transform.scale(
             scaleY: breathingScale, // Only stretch Y axis for a "breathing" growth effect
             child: const Flutter3DViewer(
-              src: 'assets/3D/maple_tree.glb',
+              src: 'assets/3D/tree_gn.glb',
               progressBarColor: Colors.transparent,
               enableTouch: true, // Allow user to spin the tree in dashboard
             ),

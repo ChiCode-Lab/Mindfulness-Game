@@ -20,7 +20,7 @@
             "Update ZenTreeRenderer to use the new model path",
             "Verify model loads without shader errors"
         ],
-        "passes": false
+        "passes": true
     },
     {
         "category": "3d_rendering",
