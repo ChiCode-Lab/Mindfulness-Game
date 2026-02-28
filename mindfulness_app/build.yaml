@@ -1,0 +1,12 @@
+targets:
+  $default:
+    builders:
+      native_toolchain_c|clang:
+        enabled: false
+      native_toolchain_c|cpp_backend:
+        enabled: false
+      native_toolchain_c|linker:
+        enabled: false
+      native_toolchain_c|compiler:
+        enabled: false
+

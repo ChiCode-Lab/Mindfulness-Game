@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "brand_name": "ChiCode",
+    "description": "Core design tokens extracted from https://chi-code-website.vercel.app/"
+  },
+  "colors": {
+    "primary": {
+      "DEFAULT": "#0070F3",
+      "hover": "#0056b3",
+      "foreground": "#FFFFFF",
+      "gradient": {
+        "from": "#0070F3",
+        "to": "#00E6C8"
+      }
+    },
+    "secondary": {
+      "DEFAULT": "#00E6C8",
+      "foreground": "#050A0F"
+    },
+    "background": "#050A0F",
+    "foreground": "#FFFFFF",
+    "muted": "#D1D5DB",
+    "accent": "#00E6C8",
+    "destructive": "#EF4444",
+    "success": "#10B981"
+  },
+  "typography": {
+    "font_family_headings": [
+      "Outfit",
+      "sans-serif"
+    ],
+    "font_family_body": [
+      "Inter",
+      "sans-serif"
+    ],
+    "font_weight_bold": "700",
+    "font_weight_normal": "400"
+  },
+  "ui": {
+    "border_radius_default": "1rem",
+    "border_radius_pill": "9999px",
+    "border_radius_small": "0.5rem",
+    "spacing_base_unit": "4px",
+    "glow_effect": "0 0 20px rgba(0, 112, 243, 0.4)"
+  }
+}

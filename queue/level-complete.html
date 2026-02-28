@@ -1,0 +1,113 @@
+<html class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ff8a66",
+            "background-light": "#f8f6f5",
+            "background-dark": "#1A233A", // Deep twilight blue as requested
+            "modal-dark": "#222E4A", // Glassmorphic base
+            "muted-lavender": "#B0BEC5",
+            "off-white": "#F8F9FA"
+          },
+          fontFamily: {
+            "display": ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-effect {
+      background: rgba(34, 46, 74, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .organic-blob {
+      background: radial-gradient(circle at 30% 30%, #ff8a66, #e57373);
+      box-shadow: 0 0 40px rgba(255, 138, 102, 0.4);
+    }
+    .ambient-glow {
+      background: radial-gradient(circle at 50% 50%, rgba(156, 39, 176, 0.15) 0%, transparent 70%);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-off-white overflow-hidden">
+<!-- Background Layer: Mimics blurred game state -->
+<div class="fixed inset-0 z-0">
+<div class="absolute inset-0 ambient-glow"></div>
+<div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[120px]"></div>
+<div class="grid grid-cols-4 gap-4 p-8 opacity-20">
+<div class="aspect-square rounded-full border-2 border-primary/20"></div>
+<div class="aspect-square rounded-xl border-2 border-primary/20"></div>
+<div class="aspect-square rounded-full border-2 border-primary/20"></div>
+<div class="aspect-square rounded-xl border-2 border-primary/20"></div>
+</div>
+</div>
+<!-- Main Content Wrapper -->
+<div class="relative z-10 flex h-screen w-full flex-col items-center justify-center p-6">
+<!-- Top Bar for Context -->
+<div class="absolute top-0 w-full flex items-center justify-between p-6">
+<div class="text-off-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</div>
+<h2 class="text-off-white/80 text-sm font-semibold tracking-widest uppercase">Level Complete</h2>
+<div class="size-10"></div> <!-- Spacer -->
+</div>
+<!-- Central Modal Card -->
+<div class="glass-effect w-full max-w-[400px] rounded-xl p-8 flex flex-col items-center shadow-2xl">
+<h1 class="text-off-white text-3xl font-bold leading-tight mb-8 text-center">Breathe deeply</h1>
+<!-- Glowing Organic Blob Icon -->
+<div class="relative mb-10">
+<div class="organic-blob size-32 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-5xl font-bold">check</span>
+</div>
+<div class="absolute -inset-4 organic-blob opacity-20 blur-xl rounded-full"></div>
+</div>
+<!-- Stats Grid -->
+<div class="flex w-full gap-4 mb-10">
+<div class="flex-1 flex flex-col items-center justify-center gap-1 py-4 rounded-lg bg-white/5 border border-white/10">
+<p class="text-muted-lavender text-xs font-medium uppercase tracking-wider">Time Taken</p>
+<p class="text-off-white text-2xl font-bold">2:45</p>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center gap-1 py-4 rounded-lg bg-white/5 border border-white/10">
+<p class="text-muted-lavender text-xs font-medium uppercase tracking-wider">Daily Streak</p>
+<p class="text-off-white text-2xl font-bold">12 days</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col w-full gap-4">
+<button class="flex h-14 w-full cursor-pointer items-center justify-center rounded-xl bg-primary text-background-dark text-lg font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span>Next Level</span>
+</button>
+<button class="flex h-10 w-full cursor-pointer items-center justify-center rounded-xl bg-transparent text-muted-lavender text-base font-semibold hover:text-off-white transition-colors">
+<span>Home</span>
+</button>
+</div>
+</div>
+<!-- Hidden Image Data Placeholder for visual cues -->
+<div class="hidden" data-alt="Abstract soft glowing shapes in a twilight sky background" data-location="Mindfulness Haven" style=""></div>
+</div>
+
+```</body></html>

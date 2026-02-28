@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff8a66",
+                        "background-light": "#f8f6f5",
+                        "background-dark": "#1A233A", // Overriding slightly for the requested twilight blue
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-shape {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-target {
+            border: 2px solid rgba(255, 138, 102, 0.4);
+            box-shadow: 0 0 15px rgba(255, 138, 102, 0.2);
+        }
+        .bg-twilight {
+            background: radial-gradient(circle at top center, #2D1B4E 0%, #1A233A 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<!-- Main App Container -->
+<div class="relative flex h-screen w-full flex-col bg-twilight overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center p-6 pb-2 justify-between">
+<button class="text-slate-100 flex size-10 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">pause</span>
+</button>
+<div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+<span class="text-primary material-symbols-outlined text-xl fill-1">local_fire_department</span>
+<span class="text-slate-100 text-sm font-bold tracking-tight">Streak: 42</span>
+</div>
+<div class="size-10"></div> <!-- Spacer for symmetry -->
+</header>
+<!-- Progress Bar -->
+<div class="px-6 py-4">
+<div class="flex justify-between mb-2">
+<span class="text-xs font-medium text-slate-400 uppercase tracking-widest">Focus Session</span>
+<span class="text-xs font-medium text-primary uppercase tracking-widest">65%</span>
+</div>
+<div class="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden shadow-inner">
+<div class="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(255,138,102,0.6)]" style="width: 65%;"></div>
+</div>
+</div>
+<!-- Game Area: 4x4 Grid of Organic Shapes -->
+<main class="flex-1 flex items-center justify-center p-6">
+<div class="grid grid-cols-4 gap-4 w-full max-w-sm aspect-square">
+<!-- Shape 1 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 2 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 3 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 4 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 5 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 6 (Target) -->
+<div class="glass-shape glow-target rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-primary/10 blur-sm"></div>
+</div>
+<!-- Shape 7 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 8 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 9 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 10 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 11 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 12 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 13 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 14 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 15 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+<!-- Shape 16 -->
+<div class="glass-shape rounded-full flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-white/5 blur-sm"></div>
+</div>
+</div>
+</main>
+<!-- Floating Footer Controls -->
+<footer class="pb-12 px-6">
+<div class="mx-auto max-w-xs glass-shape rounded-full p-2 flex items-center gap-2">
+<!-- Mode Switcher -->
+<div class="flex h-11 flex-1 items-center justify-center rounded-full bg-slate-900/40 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-primary/20 has-[:checked]:text-primary text-slate-400 text-xs font-bold transition-all">
+<span class="truncate uppercase tracking-wider">Solo</span>
+<input checked="" class="invisible w-0" name="game-mode" type="radio" value="Solo"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-primary/20 has-[:checked]:text-primary text-slate-400 text-xs font-bold transition-all">
+<span class="truncate uppercase tracking-wider">Multi</span>
+<input class="invisible w-0" name="game-mode" type="radio" value="Multiplayer"/>
+</label>
+</div>
+<!-- Hint Button -->
+<button class="flex h-11 items-center justify-center rounded-full px-6 bg-primary text-slate-900 gap-2 font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">lightbulb</span>
+<span>HINT</span>
+</button>
+</div>
+</footer>
+<!-- Ambient Decoration -->
+<div class="absolute top-1/4 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+</div>
+</body></html>

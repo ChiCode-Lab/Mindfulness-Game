@@ -1,0 +1,344 @@
+[
+    {
+        "id": "async-defer-await",
+        "category": "Eliminating Waterfalls",
+        "priority": "CRITICAL",
+        "description": "Move await into branches where actually used"
+    },
+    {
+        "id": "async-parallel",
+        "category": "Eliminating Waterfalls",
+        "priority": "CRITICAL",
+        "description": "Use Promise.all() for independent operations"
+    },
+    {
+        "id": "async-dependencies",
+        "category": "Eliminating Waterfalls",
+        "priority": "CRITICAL",
+        "description": "Use better-all for partial dependencies"
+    },
+    {
+        "id": "async-api-routes",
+        "category": "Eliminating Waterfalls",
+        "priority": "CRITICAL",
+        "description": "Start promises early, await late in API routes"
+    },
+    {
+        "id": "async-suspense-boundaries",
+        "category": "Eliminating Waterfalls",
+        "priority": "CRITICAL",
+        "description": "Use Suspense to stream content"
+    },
+    {
+        "id": "bundle-barrel-imports",
+        "category": "Bundle Size Optimization",
+        "priority": "CRITICAL",
+        "description": "Import directly, avoid barrel files"
+    },
+    {
+        "id": "bundle-dynamic-imports",
+        "category": "Bundle Size Optimization",
+        "priority": "CRITICAL",
+        "description": "Use next/dynamic for heavy components"
+    },
+    {
+        "id": "bundle-defer-third-party",
+        "category": "Bundle Size Optimization",
+        "priority": "CRITICAL",
+        "description": "Load analytics/logging after hydration"
+    },
+    {
+        "id": "bundle-conditional",
+        "category": "Bundle Size Optimization",
+        "priority": "CRITICAL",
+        "description": "Load modules only when feature is activated"
+    },
+    {
+        "id": "bundle-preload",
+        "category": "Bundle Size Optimization",
+        "priority": "CRITICAL",
+        "description": "Preload on hover/focus for perceived speed"
+    },
+    {
+        "id": "server-auth-actions",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Authenticate server actions like API routes"
+    },
+    {
+        "id": "server-cache-react",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Use React.cache() for per-request deduplication"
+    },
+    {
+        "id": "server-cache-lru",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Use LRU cache for cross-request caching"
+    },
+    {
+        "id": "server-dedup-props",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Avoid duplicate serialization in RSC props"
+    },
+    {
+        "id": "server-serialization",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Minimize data passed to client components"
+    },
+    {
+        "id": "server-parallel-fetching",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Restructure components to parallelize fetches"
+    },
+    {
+        "id": "server-after-nonblocking",
+        "category": "Server-Side Performance",
+        "priority": "HIGH",
+        "description": "Use after() for non-blocking operations"
+    },
+    {
+        "id": "client-swr-dedup",
+        "category": "Client-Side Data Fetching",
+        "priority": "MEDIUM-HIGH",
+        "description": "Use SWR for automatic request deduplication"
+    },
+    {
+        "id": "client-event-listeners",
+        "category": "Client-Side Data Fetching",
+        "priority": "MEDIUM-HIGH",
+        "description": "Deduplicate global event listeners"
+    },
+    {
+        "id": "client-passive-event-listeners",
+        "category": "Client-Side Data Fetching",
+        "priority": "MEDIUM-HIGH",
+        "description": "Use passive listeners for scroll"
+    },
+    {
+        "id": "client-localstorage-schema",
+        "category": "Client-Side Data Fetching",
+        "priority": "MEDIUM-HIGH",
+        "description": "Version and minimize localStorage data"
+    },
+    {
+        "id": "rerender-defer-reads",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Don't subscribe to state only used in callbacks"
+    },
+    {
+        "id": "rerender-memo",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Extract expensive work into memoized components"
+    },
+    {
+        "id": "rerender-memo-with-default-value",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Hoist default non-primitive props"
+    },
+    {
+        "id": "rerender-dependencies",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Use primitive dependencies in effects"
+    },
+    {
+        "id": "rerender-derived-state",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Subscribe to derived booleans, not raw values"
+    },
+    {
+        "id": "rerender-derived-state-no-effect",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Derive state during render, not effects"
+    },
+    {
+        "id": "rerender-functional-setstate",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Use functional setState for stable callbacks"
+    },
+    {
+        "id": "rerender-lazy-state-init",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Pass function to useState for expensive values"
+    },
+    {
+        "id": "rerender-simple-expression-in-memo",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Avoid memo for simple primitives"
+    },
+    {
+        "id": "rerender-move-effect-to-event",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Put interaction logic in event handlers"
+    },
+    {
+        "id": "rerender-transitions",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Use startTransition for non-urgent updates"
+    },
+    {
+        "id": "rerender-use-ref-transient-values",
+        "category": "Re-render Optimization",
+        "priority": "MEDIUM",
+        "description": "Use refs for transient frequent values"
+    },
+    {
+        "id": "rendering-animate-svg-wrapper",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Animate div wrapper, not SVG element"
+    },
+    {
+        "id": "rendering-content-visibility",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Use content-visibility for long lists"
+    },
+    {
+        "id": "rendering-hoist-jsx",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Extract static JSX outside components"
+    },
+    {
+        "id": "rendering-svg-precision",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Reduce SVG coordinate precision"
+    },
+    {
+        "id": "rendering-hydration-no-flicker",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Use inline script for client-only data"
+    },
+    {
+        "id": "rendering-hydration-suppress-warning",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Suppress expected mismatches"
+    },
+    {
+        "id": "rendering-activity",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Use Activity component for show/hide"
+    },
+    {
+        "id": "rendering-conditional-render",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Use ternary, not && for conditionals"
+    },
+    {
+        "id": "rendering-usetransition-loading",
+        "category": "Rendering Performance",
+        "priority": "MEDIUM",
+        "description": "Prefer useTransition for loading state"
+    },
+    {
+        "id": "js-batch-dom-css",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Group CSS changes via classes or cssText"
+    },
+    {
+        "id": "js-index-maps",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Build Map for repeated lookups"
+    },
+    {
+        "id": "js-cache-property-access",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Cache object properties in loops"
+    },
+    {
+        "id": "js-cache-function-results",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Cache function results in module-level Map"
+    },
+    {
+        "id": "js-cache-storage",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Cache localStorage/sessionStorage reads"
+    },
+    {
+        "id": "js-combine-iterations",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Combine multiple filter/map into one loop"
+    },
+    {
+        "id": "js-length-check-first",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Check array length before expensive comparison"
+    },
+    {
+        "id": "js-early-exit",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Return early from functions"
+    },
+    {
+        "id": "js-hoist-regexp",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Hoist RegExp creation outside loops"
+    },
+    {
+        "id": "js-min-max-loop",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Use loop for min/max instead of sort"
+    },
+    {
+        "id": "js-set-map-lookups",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Use Set/Map for O(1) lookups"
+    },
+    {
+        "id": "js-tosorted-immutable",
+        "category": "JavaScript Performance",
+        "priority": "LOW-MEDIUM",
+        "description": "Use toSorted() for immutability"
+    },
+    {
+        "id": "advanced-event-handler-refs",
+        "category": "Advanced Patterns",
+        "priority": "LOW",
+        "description": "Store event handlers in refs"
+    },
+    {
+        "id": "advanced-init-once",
+        "category": "Advanced Patterns",
+        "priority": "LOW",
+        "description": "Initialize app once per app load"
+    },
+    {
+        "id": "advanced-use-latest",
+        "category": "Advanced Patterns",
+        "priority": "LOW",
+        "description": "useLatest for stable callback refs"
+    }
+]

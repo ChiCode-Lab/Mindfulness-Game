@@ -1,0 +1,43 @@
+# Node / npm
+node_modules/
+.npm/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.g.dart
+*.freezed.dart
+pubspec.lock
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Agent/skill generated artifacts we don't want in git
+.agent/skills/.remotion/node_modules/
+.agent/skills/*/node_modules/
+
+# Temp / scratch
+nul
+parsed_convo*.txt
+extract*.js
+extract*.py

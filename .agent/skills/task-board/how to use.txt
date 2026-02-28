@@ -1,0 +1,7 @@
+How it works:
+Initialize: Run the command (or ask me) to create TASKS.md: powershell -ExecutionPolicy Bypass -File .agent/skills/task-board/scripts/init-board.ps1
+Assign:
+- [ ] Fix API @Antigravity (Assigned to me)
+- [ ] Run Tests @Terminal (Assigned to terminal agent)
+- [ ] Update Docs (Free for anyone)
+Collaborate: Both agents can now read this file to know exactly what to do next.

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Weekly Progress Stats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#b0bec4", // Muted Lavender
+                "accent": "#FF8A65",  // Soft Coral
+                "background-light": "#f7f7f7",
+                "background-dark": "#1A233A", // Deep Twilight Blue
+                "surface": "#222E4A",        // Soft Midnight
+                "off-white": "#F8F9FA",
+                "muted-lavender": "#B0BEC5"
+              },
+              fontFamily: {
+                "display": ["Manrope", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .purple-glow {
+            background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15), transparent 70%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-off-white font-display min-h-screen flex flex-col">
+<!-- Subtle Ambient Glow Overlay -->
+<div class="fixed inset-0 purple-glow pointer-events-none"></div>
+<!-- Header -->
+<header class="relative flex items-center justify-between px-6 pt-8 pb-4">
+<button class="flex items-center justify-center size-10 rounded-full bg-surface/40 hover:bg-surface/60 transition-colors">
+<span class="material-symbols-outlined text-off-white">chevron_left</span>
+</button>
+<h1 class="text-off-white text-lg font-bold tracking-tight">Your Mindfulness Journey</h1>
+<div class="size-10"></div> <!-- Spacer for symmetry -->
+</header>
+<main class="flex-1 overflow-y-auto px-6 pb-24">
+<!-- Main Chart Section -->
+<div class="mt-4 mb-8">
+<div class="flex flex-col gap-1 mb-6">
+<p class="text-muted-lavender text-sm font-medium uppercase tracking-wider">Mindfulness Minutes</p>
+<div class="flex items-baseline gap-3">
+<span class="text-off-white text-4xl font-extrabold tracking-tight">245</span>
+<span class="text-accent text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+                        +12%
+                    </span>
+</div>
+<p class="text-muted-lavender/60 text-xs">Last 7 days average</p>
+</div>
+<!-- Soft Glowing Line Chart -->
+<div class="relative w-full h-48 py-4">
+<svg class="w-full h-full drop-shadow-[0_0_8px_rgba(255,138,101,0.4)]" viewbox="0 0 478 150">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#FF8A65" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#FF8A65" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Area Fill -->
+<path d="M0 109C18.15 109 18.15 21 36.3 21C54.46 21 54.46 41 72.61 41C90.77 41 90.77 93 108.92 93C127.07 93 127.07 33 145.23 33C163.38 33 163.38 101 181.53 101C199.69 101 199.69 61 217.84 61C236 61 236 45 254.15 45C272.3 45 272.3 121 290.46 121C308.61 121 308.61 149 326.76 149C344.92 149 344.92 1 363.07 1C381.23 1 381.23 81 399.38 81C417.53 81 417.53 129 435.69 129C453.84 129 453.84 25 472 25V150H0V109Z" fill="url(#chartGradient)"></path>
+<!-- Line -->
+<path d="M0 109C18.15 109 18.15 21 36.3 21C54.46 21 54.46 41 72.61 41C90.77 41 90.77 93 108.92 93C127.07 93 127.07 33 145.23 33C163.38 33 163.38 101 181.53 101C199.69 101 199.69 61 217.84 61C236 61 236 45 254.15 45C272.3 45 272.3 121 290.46 121C308.61 121 308.61 149 326.76 149C344.92 149 344.92 1 363.07 1C381.23 1 381.23 81 399.38 81C417.53 81 417.53 129 435.69 129C453.84 129 453.84 25 472 25" fill="none" stroke="#FF8A65" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+</svg>
+<div class="flex justify-between mt-4 px-1">
+<span class="text-muted-lavender text-[10px] font-bold">MON</span>
+<span class="text-muted-lavender text-[10px] font-bold">TUE</span>
+<span class="text-muted-lavender text-[10px] font-bold">WED</span>
+<span class="text-muted-lavender text-[10px] font-bold">THU</span>
+<span class="text-muted-lavender text-[10px] font-bold">FRI</span>
+<span class="text-muted-lavender text-[10px] font-bold">SAT</span>
+<span class="text-muted-lavender text-[10px] font-bold">SUN</span>
+</div>
+</div>
+</div>
+<!-- Metric Pills -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-6 py-5 bg-surface rounded-xl border border-white/5 shadow-xl">
+<div class="flex flex-col">
+<span class="text-muted-lavender text-xs font-medium uppercase tracking-widest">Current Streak</span>
+<span class="text-off-white text-xl font-bold">5 Days</span>
+</div>
+<div class="size-12 rounded-full bg-accent/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-accent">local_fire_department</span>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-5 bg-surface rounded-xl border border-white/5 shadow-xl">
+<div class="flex flex-col">
+<span class="text-muted-lavender text-xs font-medium uppercase tracking-widest">Longest Session</span>
+<span class="text-off-white text-xl font-bold">45 min</span>
+</div>
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">timer</span>
+</div>
+</div>
+<div class="flex items-center justify-between px-6 py-5 bg-surface rounded-xl border border-white/5 shadow-xl">
+<div class="flex flex-col">
+<span class="text-muted-lavender text-xs font-medium uppercase tracking-widest">Total Mindful Time</span>
+<span class="text-off-white text-xl font-bold">12.5 hrs</span>
+</div>
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">all_inclusive</span>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<div class="mt-8 flex justify-center">
+<button class="bg-primary hover:bg-primary/90 text-background-dark font-bold py-4 px-8 rounded-full flex items-center gap-3 transition-all transform active:scale-95 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">share</span>
+<span>Share Progress</span>
+</button>
+</div>
+</main>
+<!-- Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-md border-t border-white/5 px-6 pb-6 pt-3 flex items-center justify-between z-50">
+<a class="flex flex-col items-center gap-1 text-muted-lavender/40 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-accent transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">leaderboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-muted-lavender/40 transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-muted-lavender/40 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+</a>
+</nav>
+</body></html>

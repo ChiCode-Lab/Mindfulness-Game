@@ -1,0 +1,5 @@
+tell the agent;
+
+Initialize the context bridge.
+
+the agent will; run the script to set up the CONTEXT.md file for you automatically.

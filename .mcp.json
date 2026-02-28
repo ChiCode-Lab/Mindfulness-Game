@@ -1,0 +1,30 @@
+{
+    "mcpServers": {
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@playwright/mcp@latest",
+                "--headless",
+                "--output-dir",
+                "."
+            ]
+        },
+        "sequential-thinking": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ]
+        },
+        "tavily-remote-mcp": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "https://mcp.tavily.com/mcp/?tavilyApiKey=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"
+            ],
+            "env": {}
+        }
+    }
+}

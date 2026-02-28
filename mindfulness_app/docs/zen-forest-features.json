@@ -1,0 +1,58 @@
+[
+    {
+        "category": "mechanics",
+        "id": "fifo_presence_logic",
+        "description": "Presence Level starts at 100 and uses a FIFO queue of [+1, -1] points.",
+        "steps": [
+            "Modify ProgressService to store a List<int> of points",
+            "Implement FIFO cap (e.g., 50 most recent interactions)",
+            "Calculate current Presence as (Initial 100 + Sum(List)) / scale",
+            "Write unit tests to verify points are added/removed correctly"
+        ],
+        "passes": false
+    },
+    {
+        "category": "3d_rendering",
+        "id": "tree_gn_integration",
+        "description": "The tree_gn.glb model renders correctly in the app.",
+        "steps": [
+            "Add tree_gn.glb to pubspec.yaml assets",
+            "Update ZenTreeRenderer to use the new model path",
+            "Verify model loads without shader errors"
+        ],
+        "passes": false
+    },
+    {
+        "category": "3d_rendering",
+        "id": "dynamic_scaling_animation",
+        "description": "The tree scales continuously and animates when leaves are added.",
+        "steps": [
+            "Map leafCount to a scale factor in ZenTreeData",
+            "Use AnimatedScale to transition between sizes",
+            "Verify 'Leaf Infusion' animation is smooth"
+        ],
+        "passes": false
+    },
+    {
+        "category": "ui_ux",
+        "id": "legacy_forest_grid",
+        "description": "Grid-like layout (Bento) showing past trees.",
+        "steps": [
+            "Create ForestScreen with a GridView",
+            "Implement Premium check (Hide days 6-12 for free users)",
+            "Style cards with Glassmorphism (blur, thin borders)"
+        ],
+        "passes": false
+    },
+    {
+        "category": "ui_ux",
+        "id": "tree_interaction_overlay",
+        "description": "Tapping a tree reveals a detailed session breakdown.",
+        "steps": [
+            "Implement GestureHandler on the 3D model/card",
+            "Create Glassmorphic overlay displaying Solo vs Coop leaves",
+            "Display Deep Focus (Avg Reaction Time) on the overlay"
+        ],
+        "passes": false
+    }
+]
