@@ -9,7 +9,7 @@
             "Calculate current Presence as (Initial 100 + Sum(List)) / scale",
             "Write unit tests to verify points are added/removed correctly"
         ],
-        "passes": false
+        "passes": true
     },
     {
         "category": "3d_rendering",

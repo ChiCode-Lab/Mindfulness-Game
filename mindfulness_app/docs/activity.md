@@ -4,6 +4,32 @@ This file tracks progress across all coding sessions, following the "Effective H
 
 ## 🕒 Latest Activity
 
+### Session: 2026-02-28 (fifo_presence_logic)
+**Objective**: Implement FIFO Presence Level mechanic in `ProgressService`.
+
+**Actions Taken**:
+- [x] Added `presencePoints` FIFO queue (`List<int>`) to `ProgressService`, persisted via SharedPreferences.
+- [x] Implemented FIFO cap of 50 most recent interactions (oldest evicted first).
+- [x] Added `presenceLevel` getter: `(baseline 100 + sum(points)).clamp(0, 200)`.
+- [x] Added `presenceRatio` getter for UI (0.0–1.0 normalized).
+- [x] Added `recordHit()` (+1) and `recordMiss()` (-1) public methods.
+- [x] Added `resetPresencePoints()` for daily reset / testing.
+- [x] Integrated `recordHit()` into existing `incrementLeaf()` method.
+- [x] Wrote 12 unit tests — all passing.
+- [x] Built web release and captured screenshot (`screenshots/fifo_presence_logic.png`).
+
+**Files Modified**:
+- `lib/services/progress_service.dart` — FIFO presence logic added.
+- `test/services/progress_service_presence_test.dart` — New test file (12 tests).
+
+**Screenshot**: `screenshots/fifo_presence_logic.png`
+
+**Status**:
+- **Tests**: 12/12 passing.
+- **Next Feature**: `tree_gn_integration` (3D model rendering).
+
+---
+
 ### Session: 2026-02-28 (Initial Alignment & Setup)
 **Objective**: Transition PRD into an incremental implemention harness.
 
@@ -26,7 +52,7 @@ This file tracks progress across all coding sessions, following the "Effective H
 
 | Feature ID | Category | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| `fifo_presence_logic` | Mechanics | 🔴 Pending | First implementation target. |
+| `fifo_presence_logic` | Mechanics | 🟢 Done | Implemented FIFO queue in ProgressService. |
 | `tree_gn_integration` | 3D Rendering | 🔴 Pending | Requires `pubspec.yaml` update. |
 | `dynamic_scaling` | 3D Rendering | 🔴 Pending | Requires `AnimatedScale` logic. |
 | `legacy_forest_grid` | UI/UX | 🔴 Pending | Bento-grid with premium checks. |
@@ -39,3 +65,4 @@ This file tracks progress across all coding sessions, following the "Effective H
 | Date | Session Summary | Key Artifacts |
 | :--- | :--- | :--- |
 | 2026-02-28 | Environment Setup | `plan.md`, `zen-forest-features.json` |
+| 2026-02-28 | `fifo_presence_logic` implemented | `progress_service.dart`, `progress_service_presence_test.dart`, `screenshots/fifo_presence_logic.png` |

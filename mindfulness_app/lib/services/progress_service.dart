@@ -12,6 +12,13 @@ class ProgressService {
   static const String _longestStreakKey = 'longest_streak';
   static const String _lastMeditatedKey = 'last_meditated_date';
   static const String _totalMinutesKey = 'total_mindful_minutes';
+  static const String _presencePointsKey = 'presence_points';
+
+  /// Initial baseline for presence level.
+  static const int presenceBaseline = 100;
+
+  /// Maximum number of recent interactions retained (FIFO).
+  static const int presenceFifoCap = 50;
 
   late SharedPreferences _prefs;
 
@@ -23,6 +30,56 @@ class ProgressService {
     final str = _prefs.getString(_lastMeditatedKey);
     if (str == null) return null;
     return DateTime.tryParse(str);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Presence Level (FIFO queue of +1 / -1 points)
+  // ---------------------------------------------------------------------------
+
+  /// Returns the raw list of recent interaction points (+1 or -1).
+  List<int> get presencePoints {
+    final jsonStr = _prefs.getString(_presencePointsKey);
+    if (jsonStr == null) return <int>[];
+    try {
+      return List<int>.from(jsonDecode(jsonStr) as List);
+    } catch (_) {
+      return <int>[];
+    }
+  }
+
+  /// Current Presence Level = baseline (100) + sum(points), clamped to [0, 200].
+  int get presenceLevel {
+    final sum = presencePoints.fold<int>(0, (a, b) => a + b);
+    return (presenceBaseline + sum).clamp(0, 200);
+  }
+
+  /// Normalized presence as a 0.0–1.0 ratio (for UI progress bars / scaling).
+  double get presenceRatio => presenceLevel / 200.0;
+
+  /// Record a correct interaction (+1 point).
+  Future<void> recordHit() async => _addPresencePoint(1);
+
+  /// Record an incorrect / missed interaction (-1 point).
+  Future<void> recordMiss() async => _addPresencePoint(-1);
+
+  /// Internal: append a point, enforce FIFO cap, and persist.
+  Future<void> _addPresencePoint(int point) async {
+    final points = presencePoints;
+    points.add(point);
+    // Enforce FIFO cap – remove oldest entries first.
+    while (points.length > presenceFifoCap) {
+      points.removeAt(0);
+    }
+    await _savePresencePoints(points);
+  }
+
+  Future<void> _savePresencePoints(List<int> points) async {
+    await _prefs.setString(_presencePointsKey, jsonEncode(points));
+  }
+
+  /// Reset the presence queue (e.g. for a new day or testing).
+  Future<void> resetPresencePoints() async {
+    await _prefs.remove(_presencePointsKey);
   }
 
   Future<void> init() async {
@@ -134,6 +191,8 @@ class ProgressService {
       today.leafCount += 1;
       await _saveTodayTree(today);
     }
+    // A correct tap is also a positive presence interaction.
+    await recordHit();
   }
 
   Future<void> _saveTodayTree(ZenTreeData tree) async {
