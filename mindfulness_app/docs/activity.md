@@ -4,6 +4,29 @@ This file tracks progress across all coding sessions, following the "Effective H
 
 ## 🕒 Latest Activity
 
+### Session: 2026-02-28 (dynamic_scaling_animation)
+**Objective**: Add smooth animated scaling and "Leaf Infusion" pulse to ZenTreeRenderer.
+
+**Actions Taken**:
+- [x] Confirmed `ZenTreeData.scaleFactor` already maps `leafCount` to scale (0.5–1.5 asymptotic).
+- [x] Replaced `Transform.scale` with `AnimatedScale` for smooth growth transitions (800ms, easeInOutCubic).
+- [x] Added `_infusionController` — a one-shot TweenSequence pulse (overshoot to 1.15x then elastic settle).
+- [x] Used `didUpdateWidget` to detect `leafCount` increases and trigger the infusion animation.
+- [x] Upgraded mixin to `TickerProviderStateMixin` for multiple AnimationControllers.
+- [x] Extracted `Flutter3DViewer` as `child` parameter for AnimatedBuilder efficiency.
+- [x] Built web release successfully, captured screenshot.
+
+**Files Modified**:
+- `lib/widgets/zen_tree_renderer.dart` — Rewrote with AnimatedScale + Leaf Infusion pulse.
+
+**Screenshot**: `screenshots/dynamic_scaling_animation.png`
+
+**Status**:
+- **Build**: Clean.
+- **Next Feature**: `legacy_forest_grid`.
+
+---
+
 ### Session: 2026-02-28 (tree_gn_integration)
 **Objective**: Integrate the `tree_gn.glb` 3D model into the app.
 
@@ -75,7 +98,7 @@ This file tracks progress across all coding sessions, following the "Effective H
 | :--- | :--- | :--- | :--- |
 | `fifo_presence_logic` | Mechanics | 🟢 Done | Implemented FIFO queue in ProgressService. |
 | `tree_gn_integration` | 3D Rendering | 🟢 Done | Model integrated into ZenTreeRenderer. |
-| `dynamic_scaling` | 3D Rendering | 🔴 Pending | Requires `AnimatedScale` logic. |
+| `dynamic_scaling` | 3D Rendering | 🟢 Done | AnimatedScale + Leaf Infusion pulse. |
 | `legacy_forest_grid` | UI/UX | 🔴 Pending | Bento-grid with premium checks. |
 | `tree_interaction` | UI/UX | 🔴 Pending | Glassmorphic session insights. |
 
@@ -88,3 +111,4 @@ This file tracks progress across all coding sessions, following the "Effective H
 | 2026-02-28 | Environment Setup | `plan.md`, `zen-forest-features.json` |
 | 2026-02-28 | `fifo_presence_logic` implemented | `progress_service.dart`, `progress_service_presence_test.dart`, `screenshots/fifo_presence_logic.png` |
 | 2026-02-28 | `tree_gn_integration` implemented | `pubspec.yaml`, `zen_tree_renderer.dart`, `screenshots/tree_gn_integration.png` |
+| 2026-02-28 | `dynamic_scaling_animation` implemented | `zen_tree_renderer.dart`, `screenshots/dynamic_scaling_animation.png` |

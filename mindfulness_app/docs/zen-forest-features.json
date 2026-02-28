@@ -31,7 +31,7 @@
             "Use AnimatedScale to transition between sizes",
             "Verify 'Leaf Infusion' animation is smooth"
         ],
-        "passes": false
+        "passes": true
     },
     {
         "category": "ui_ux",
