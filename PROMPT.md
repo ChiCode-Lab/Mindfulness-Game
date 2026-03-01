@@ -26,14 +26,13 @@ Implement the chosen task in the Flutter codebase. Follow the `steps` array list
 
 ## STEP 4 — Verify with Screenshot
 
-After implementing, build/serve the app and take a screenshot:
+After implementing, you MUST take a screenshot of the ACTUAL feature you just built. Because this is a Flutter Web app without URL routing, follow this exact procedure:
 
-1. Start the Flutter web build or a local HTTP server if a web build exists:
-   - Try: `python3 -m http.server 8080` (or another port if taken)
-   - Or: `flutter run -d chrome --web-port 8080`
-2. Take a screenshot using Playwright and save it as:
-   `screenshots/[task-id].png`
-   where `[task-id]` matches the `"id"` field in the JSON.
+1. **Temporarily modify `main.dart`**: Change the `home:` property of `MaterialApp` to directly render the new widget/screen you are working on (e.g. `ForestScreen` instead of `DashboardScreen`).
+2. Start the local server: `python3 -m http.server 8080` (or `flutter run -d chrome --web-port 8080`)
+3. Use Playwright to navigate to `http://localhost:8080` and wait for the canvas to load.
+4. Take a screenshot and save it as: `screenshots/[task-id].png`
+5. **Revert your temporary change** to `main.dart` so it isn't committed.
 
 ---
 

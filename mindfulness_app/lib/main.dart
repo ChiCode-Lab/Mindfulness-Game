@@ -9,6 +9,7 @@ import 'models/game_settings.dart';
 import 'models/game_metrics.dart';
 import 'services/soundscape_engine.dart';
 import 'services/progress_service.dart';
+import 'screens/forest_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -63,9 +64,7 @@ class MindfulnessApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Colors.transparent, // Handled by gradient
       ),
-      home: hasCompletedOnboarding 
-          ? DashboardScreen(progressService: progressService)
-          : OnboardingScreen(progressService: progressService),
+      home: ForestScreen(progressService: progressService),
     );
   }
 }

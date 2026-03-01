@@ -33,7 +33,7 @@ Desktop.ini
 logs/
 
 # Agent/skill generated artifacts we don't want in git
-.agent/skills/.remotion/node_modules/
+.agent/skills/.remotion/
 .agent/skills/*/node_modules/
 
 # Temp / scratch
