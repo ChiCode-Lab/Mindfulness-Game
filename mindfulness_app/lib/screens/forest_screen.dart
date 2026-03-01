@@ -38,17 +38,7 @@ class _ForestScreenState extends State<ForestScreen> {
   Widget build(BuildContext context) {
     final legacyTrees = widget.progressService.getLegacyForest();
     // Most recent first.
-    var trees = legacyTrees.reversed.toList();
-
-    // Verification Mock: Ensure at least one tree exists for the screenshot.
-    if (trees.isEmpty) {
-      trees = [
-        ZenTreeData(
-          date: DateTime.now().subtract(const Duration(days: 1)),
-          leafCount: 42,
-        ),
-      ];
-    }
+    final trees = legacyTrees.reversed.toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A233A),
@@ -297,12 +287,15 @@ class _ForestCard extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          // Tree icon placeholder (visual representation)
+          // Tree icon visual representation scaled by leaf count (up to 2000)
           Center(
-            child: Icon(
-              Icons.park_rounded,
-              color: healthColor.withOpacity(0.85),
-              size: 48,
+            child: Transform.scale(
+              scale: tree.scaleFactor,
+              child: Icon(
+                Icons.park_rounded,
+                color: healthColor.withOpacity(0.85),
+                size: 48,
+              ),
             ),
           ),
           const Spacer(),
@@ -498,7 +491,7 @@ class _TreeDetailOverlay extends StatelessWidget {
                     const SizedBox(height: 24),
                     _buildMetricRow(
                       'Focus Score',
-                      '${(tree.scaleFactor * 100).toInt()}%',
+                      '${tree.focusScore}%',
                       'Presence Level',
                       Icons.psychology_outlined,
                       const Color(0xFF64B5F6),

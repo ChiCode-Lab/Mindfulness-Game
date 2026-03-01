@@ -9,7 +9,6 @@ import 'models/game_settings.dart';
 import 'models/game_metrics.dart';
 import 'services/soundscape_engine.dart';
 import 'services/progress_service.dart';
-import 'screens/forest_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -64,7 +63,9 @@ class MindfulnessApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Colors.transparent, // Handled by gradient
       ),
-      home: ForestScreen(progressService: progressService),
+      home: hasCompletedOnboarding 
+          ? DashboardScreen(progressService: progressService)
+          : OnboardingScreen(progressService: progressService),
     );
   }
 }
@@ -278,6 +279,9 @@ class _GameScreenState extends State<GameScreen> {
     metrics = GameMetrics();
     audioEngine = SoundscapeEngine();
     
+    // Initialise session presence (Metric 1: Ephemeral FIFO starts at 100)
+    widget.progressService.startSession();
+    
     _initializeGridData();
     
     _scheduleNextSpawn();
@@ -341,6 +345,8 @@ class _GameScreenState extends State<GameScreen> {
         reactionTime: const Duration(seconds: 5),
       );
     });
+    // Record a miss in the presence FIFO (Metric 1 & 2)
+    widget.progressService.recordMiss();
     // Silent fail: No harsh notifications. We just record it and wait for next spawn.
   }
 
@@ -384,6 +390,8 @@ class _GameScreenState extends State<GameScreen> {
       setState(() {
         metrics.recordTap(isCorrect: false, reactionTime: Duration.zero);
       });
+      // Record a miss in the presence FIFO (Metric 1 & 2)
+      widget.progressService.recordMiss();
       // Soft silence. No harsh UI alerts.
     }
   }
@@ -491,8 +499,8 @@ class _GameScreenState extends State<GameScreen> {
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: Text(
-                    'PRESENCE LEVEL: ${(metrics.accuracy * 100).toStringAsFixed(1)}%\nDEEP FOCUS: ${(metrics.averageReactionTime.inMilliseconds / 1000).toStringAsFixed(2)}s\nZEN TREE LEAVES: ${metrics.treeGrowthLevel}',
-                    key: ValueKey<String>('${metrics.accuracy}_${metrics.treeGrowthLevel}'),
+                    'DAILY PRESENCE: ${widget.progressService.dailyPresenceLevel}%\nSESSION FOCUS: ${widget.progressService.sessionPresenceLevel}%\nDEEP FOCUS: ${(metrics.averageReactionTime.inMilliseconds / 1000).toStringAsFixed(2)}s\nZEN TREE LEAVES: ${metrics.treeGrowthLevel}',
+                    key: ValueKey<String>('${widget.progressService.dailyPresenceLevel}_${widget.progressService.sessionPresenceLevel}_${metrics.treeGrowthLevel}'),
                     style: const TextStyle(
                       color: Color(0xFFB0BEC4),
                       fontSize: 10,

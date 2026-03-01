@@ -12,13 +12,17 @@ class ProgressService {
   static const String _longestStreakKey = 'longest_streak';
   static const String _lastMeditatedKey = 'last_meditated_date';
   static const String _totalMinutesKey = 'total_mindful_minutes';
-  static const String _presencePointsKey = 'presence_points';
+  static const String _sessionPointsKey = 'session_presence_points_ephemeral'; // In-memory typically, but let's be safe
+  static const String _presencePointsKey = 'presence_points_daily';
 
-  /// Initial baseline for presence level.
+  /// Initial baseline for presence level (Metric 1 & 2 start at 100/100).
   static const int presenceBaseline = 100;
 
-  /// Maximum number of recent interactions retained (FIFO).
-  static const int presenceFifoCap = 50;
+  /// Maximum depth of the FIFO queue. A 100-point window allows for smooth 0-100% scaling.
+  static const int presenceFifoCap = 100;
+
+  /// Metric 1: Ephemeral session-level presence points.
+  List<int> _sessionPoints = [];
 
   late SharedPreferences _prefs;
 
@@ -36,8 +40,14 @@ class ProgressService {
   // Presence Level (FIFO queue of +1 / -1 points)
   // ---------------------------------------------------------------------------
 
-  /// Returns the raw list of recent interaction points (+1 or -1).
-  List<int> get presencePoints {
+  /// Prepares the service for a new discrete session.
+  /// Metric 1 (Session Level) is reset to 100.
+  void startSession() {
+    _sessionPoints = [];
+  }
+
+  /// Returns the persistent daily presence points (+1 or -1).
+  List<int> get _dailyPresencePoints {
     final jsonStr = _prefs.getString(_presencePointsKey);
     if (jsonStr == null) return <int>[];
     try {
@@ -47,39 +57,84 @@ class ProgressService {
     }
   }
 
-  /// Current Presence Level = baseline (100) + sum(points), clamped to [0, 200].
-  int get presenceLevel {
-    final sum = presencePoints.fold<int>(0, (a, b) => a + b);
-    return (presenceBaseline + sum).clamp(0, 200);
-  }
-
-  /// Normalized presence as a 0.0–1.0 ratio (for UI progress bars / scaling).
-  double get presenceRatio => presenceLevel / 200.0;
-
-  /// Record a correct interaction (+1 point).
-  Future<void> recordHit() async => _addPresencePoint(1);
-
-  /// Record an incorrect / missed interaction (-1 point).
-  Future<void> recordMiss() async => _addPresencePoint(-1);
-
-  /// Internal: append a point, enforce FIFO cap, and persist.
-  Future<void> _addPresencePoint(int point) async {
-    final points = presencePoints;
-    points.add(point);
-    // Enforce FIFO cap – remove oldest entries first.
-    while (points.length > presenceFifoCap) {
-      points.removeAt(0);
+  /// Metric 1 (Session Level): Ephemeral FIFO, starts at 100, clamped at 0.
+  int get sessionPresenceLevel {
+    int sum = 0;
+    for (final p in _sessionPoints) {
+      sum += p;
     }
-    await _savePresencePoints(points);
+    // Baseline 100. If sum is -1, result is 99.
+    // Clamping at 100 means hits at the start don't increase it, 
+    // but the first miss will immediately drop it.
+    return (presenceBaseline + sum).clamp(0, 100);
   }
 
-  Future<void> _savePresencePoints(List<int> points) async {
-    await _prefs.setString(_presencePointsKey, jsonEncode(points));
+  /// Metric 2 (Daily Level): Persistent FIFO, starts at 100 at 00:00, aggregates all sessions.
+  int get dailyPresenceLevel {
+    int sum = 0;
+    for (final p in _dailyPresencePoints) {
+      sum += p;
+    }
+    return (presenceBaseline + sum).clamp(0, 100);
   }
 
-  /// Reset the presence queue (e.g. for a new day or testing).
+  /// Normalized daily presence as a 0.0–1.0 ratio.
+  double get dailyPresenceRatio => dailyPresenceLevel / 100.0;
+
+  /// Record a correct interaction (+1 point) for both Session and Daily levels.
+  Future<void> recordHit() async {
+    await _addPresencePoint(1);
+    
+    // Sync Metric 2 (Daily) to today's tree snapshot
+    final today = getTodayTree();
+    if (today != null) {
+      today.presenceLevel = dailyPresenceLevel;
+      await _saveTodayTree(today);
+    }
+  }
+
+  /// Record an incorrect / missed interaction (-1 point) for both Session and Daily levels.
+  Future<void> recordMiss() async {
+    await _addPresencePoint(-1);
+    
+    // Sync Metric 2 (Daily) to today's tree snapshot
+    final today = getTodayTree();
+    if (today != null) {
+      today.presenceLevel = dailyPresenceLevel;
+      await _saveTodayTree(today);
+    }
+  }
+
+  /// Internal: append a point to BOTH sub-queues (Session and Daily).
+  Future<void> _addPresencePoint(int point) async {
+    // 1. Update Ephemeral Session Points
+    _sessionPoints.add(point);
+    while (_sessionPoints.length > presenceFifoCap) {
+      _sessionPoints.removeAt(0);
+    }
+
+    // 2. Update Persistent Daily Points
+    final jsonStr = _prefs.getString(_presencePointsKey);
+    List<int> currentDaily = [];
+    if (jsonStr != null) {
+      try {
+        currentDaily = List<int>.from(jsonDecode(jsonStr) as List);
+      } catch (_) {}
+    }
+    
+    currentDaily.add(point);
+    while (currentDaily.length > presenceFifoCap) {
+      currentDaily.removeAt(0);
+    }
+    await _prefs.setString(_presencePointsKey, jsonEncode(currentDaily));
+    
+    debugPrint('Added presence point: $point. Session Level: $sessionPresenceLevel, Daily Level: $dailyPresenceLevel');
+  }
+
+  /// Reset the daily presence queue (happens at 00:00).
   Future<void> resetPresencePoints() async {
     await _prefs.remove(_presencePointsKey);
+    _sessionPoints = [];
   }
 
   Future<void> init() async {
@@ -168,7 +223,10 @@ class ProgressService {
         _moveToLegacyForest(today);
       }
       
-      final newTree = ZenTreeData(date: now, leafCount: 0);
+      // Reset presence scores for the new day
+      resetPresencePoints();
+      
+      final newTree = ZenTreeData(date: now, leafCount: 0, presenceLevel: presenceBaseline);
       _saveTodayTree(newTree);
     }
   }
@@ -191,7 +249,8 @@ class ProgressService {
       today.leafCount += 1;
       await _saveTodayTree(today);
     }
-    // A correct tap is also a positive presence interaction.
+    // Updating leafCount THEN recording hit ensures the tree's final state for the session
+    // takes into account the last action's presence impact via recordHit's auto-sync.
     await recordHit();
   }
 

@@ -53,6 +53,6 @@
             "Create Glassmorphic overlay displaying Solo vs Coop leaves",
             "Display Deep Focus (Avg Reaction Time) on the overlay"
         ],
-        "passes": false
+        "passes": true
     }
 ]
