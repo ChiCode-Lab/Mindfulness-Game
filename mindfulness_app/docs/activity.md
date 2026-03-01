@@ -4,6 +4,30 @@ This file tracks progress across all coding sessions, following the "Effective H
 
 ## 🕒 Latest Activity
 
+### Session: 2026-03-01 (legacy_forest_grid)
+**Objective**: Create a Bento-grid layout for the Legacy Forest with premium checks and Glassmorphism.
+
+**Actions Taken**:
+- [x] Implemented `ForestScreen` with a `GridView.builder` layout.
+- [x] Added `_economyService` integration to verify Premium status.
+- [x] Implemented "Locked" states (Glassmorphic blur + lock icon) for days 6-12 if not premium.
+- [x] Added dynamic health coloring for trees based on leaf count.
+- [x] Connected the Dashboard "MY ZEN FOREST" button to the new screen.
+- [x] Verified implementation with a fresh web build and Playwright screenshot.
+
+**Files Modified**:
+- `lib/screens/forest_screen.dart` — Full implementation.
+- `lib/screens/dashboard_screen.dart` — Navigation and entry button.
+- `docs/zen-forest-features.json` — Status updated to true.
+
+**Screenshot**: `screenshots/legacy_forest_grid.png`
+
+**Status**:
+- **Build**: Clean.
+- **Next Feature**: `tree_interaction_overlay`.
+
+---
+
 ### Session: 2026-02-28 (dynamic_scaling_animation)
 **Objective**: Add smooth animated scaling and "Leaf Infusion" pulse to ZenTreeRenderer.
 
@@ -99,7 +123,7 @@ This file tracks progress across all coding sessions, following the "Effective H
 | `fifo_presence_logic` | Mechanics | 🟢 Done | Implemented FIFO queue in ProgressService. |
 | `tree_gn_integration` | 3D Rendering | 🟢 Done | Model integrated into ZenTreeRenderer. |
 | `dynamic_scaling` | 3D Rendering | 🟢 Done | AnimatedScale + Leaf Infusion pulse. |
-| `legacy_forest_grid` | UI/UX | 🔴 Pending | Bento-grid with premium checks. |
+| `legacy_forest_grid` | UI/UX | 🟢 Done | Bento-grid with premium checks. |
 | `tree_interaction` | UI/UX | 🔴 Pending | Glassmorphic session insights. |
 
 ---

@@ -4,6 +4,7 @@ import '../services/multiplayer_service.dart';
 import '../services/economy_service.dart';
 import 'settings_screen.dart'; // To access SettingsScreen
 import 'multiplayer_lobby_screen.dart'; // To access Coop route
+import 'forest_screen.dart'; // To access Legacy Forest
 
 class DashboardScreen extends StatefulWidget {
   final ProgressService progressService;
@@ -56,7 +57,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _navigateToLegacyForest() {
-    // Legacy support placeholder
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ForestScreen(progressService: widget.progressService),
+      ),
+    );
   }
 
   @override
@@ -263,6 +269,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           SizedBox(width: 8),
                           Text(
                             'COOPERATIVE ZEN',
+                            style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 1.2, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _navigateToLegacyForest,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 60),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          side: BorderSide(color: Colors.white.withAlpha(40)),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.park_rounded, color: Color(0xFF66BB6A)),
+                          SizedBox(width: 8),
+                          Text(
+                            'MY ZEN FOREST',
                             style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 1.2, fontSize: 16),
                           ),
                         ],

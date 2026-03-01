@@ -42,7 +42,7 @@
             "Implement Premium check (Hide days 6-12 for free users)",
             "Style cards with Glassmorphism (blur, thin borders)"
         ],
-        "passes": false
+        "passes": true
     },
     {
         "category": "ui_ux",
