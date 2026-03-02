@@ -7,11 +7,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   setUpAll(() async {
-    // Need a dummy initialization to bypass the assertion
-    await Supabase.initialize(
-      url: 'https://dummy.supabase.co',
-      anonKey: 'dummy_key',
-    );
+    // SharedPreferences mock MUST come before Supabase.initialize() because
+    // Supabase uses SharedPreferences internally for session storage.
+    SharedPreferences.setMockInitialValues({});
+    try {
+      await Supabase.initialize(
+        url: 'https://dummy.supabase.co',
+        anonKey: 'dummy_key',
+      );
+    } catch (_) {
+      // Already initialized — safe to ignore in test suites that share state.
+    }
   });
 
   setUp(() {

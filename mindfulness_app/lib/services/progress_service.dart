@@ -139,7 +139,7 @@ class ProgressService {
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
-    _checkDailyReset();
+    await _checkDailyReset();
     _checkStreakReset();
   }
 
@@ -213,7 +213,7 @@ class ProgressService {
     }
   }
 
-  void _checkDailyReset() {
+  Future<void> _checkDailyReset() async {
     final today = getTodayTree();
     final now = DateTime.now();
 
@@ -222,12 +222,13 @@ class ProgressService {
       if (today != null && today.leafCount > 0) {
         _moveToLegacyForest(today);
       }
-      
-      // Reset presence scores for the new day
-      resetPresencePoints();
-      
+
+      // Must await — resetPresencePoints sets _sessionPoints = [] asynchronously.
+      // Without await, this can race with _addPresencePoint and wipe a newly added point.
+      await resetPresencePoints();
+
       final newTree = ZenTreeData(date: now, leafCount: 0, presenceLevel: presenceBaseline);
-      _saveTodayTree(newTree);
+      await _saveTodayTree(newTree);
     }
   }
 

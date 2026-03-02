@@ -33,6 +33,8 @@ class GameMetrics {
     if (isCorrect) {
       correctTaps++;
       currentStreak++;
+      // Only correct taps feed Deep Focus average — misses/timeouts are excluded
+      reactionTimes.add(reactionTime);
       // Every 5 correct taps in a row grows the tree
       if (currentStreak > 0 && currentStreak % 5 == 0) {
         treeGrowthLevel++;
@@ -40,8 +42,8 @@ class GameMetrics {
     } else {
       wrongTaps++;
       currentStreak = 0;
+      // reactionTime deliberately NOT recorded for misses/timeouts
     }
-    reactionTimes.add(reactionTime);
   }
 
   void reset() {

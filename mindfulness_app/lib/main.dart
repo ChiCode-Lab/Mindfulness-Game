@@ -545,11 +545,14 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildGrid() {
     return AspectRatio(
-      aspectRatio: 1.0,
+      aspectRatio: settings.aspectRatio,
+      // NOTE: BackdropFilter removed from this Stack — it conflicts with
+      // Flutter web HtmlElementView (platform views) compositing, causing
+      // Flutter3DViewer to be invisible. Glassmorphism is preserved per-cell.
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: settings.gridSize,
+          crossAxisCount: settings.gridColumns,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),
@@ -559,16 +562,19 @@ class _GameScreenState extends State<GameScreen> {
           final mutation = targetInfo?.mutation;
           final spawnTime = targetInfo?.spawnTime;
           final isPulsing = successPulses[index] ?? false;
-          
-          return GestureDetector(
-            onTap: () => _onShapeTapped(index),
-            behavior: HitTestBehavior.opaque,
-            child: ShapeCell(
-              shapeType: cellShapes[index],
-              baseAttributes: baseAttributes[index],
-              mutationSpawnTime: spawnTime,
-              mutation: mutation,
-              isSuccessPulse: isPulsing,
+
+          return RepaintBoundary(
+            child: GestureDetector(
+              onTap: () => _onShapeTapped(index),
+              behavior: HitTestBehavior.opaque,
+              child: ShapeCell(
+                key: ValueKey('cell_$index'),
+                shapeType: cellShapes[index],
+                baseAttributes: baseAttributes[index],
+                mutationSpawnTime: spawnTime,
+                mutation: mutation,
+                isSuccessPulse: isPulsing,
+              ),
             ),
           );
         },
@@ -590,33 +596,63 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Soft UI reset for edge cases
-              _initializeGridData();
-              targetTimers.values.forEach((timer) => timer.cancel());
-              targetTimers.clear();
-              activeTargets.clear();
-              _spawnTarget();
-              setState(() {});
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF8A66), // Soft Coral
-              foregroundColor: const Color(0xFF1A233A),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton(
+                onPressed: _refreshGrid,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFFB0BEC4)),
+                  foregroundColor: const Color(0xFFB0BEC4),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'REFRESH',
+                  style: TextStyle(letterSpacing: 1.2, fontSize: 12),
+                ),
               ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'REFRESH GRID',
-              style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 1.2),
-            ),
+              const SizedBox(width: 16),
+              ElevatedButton(
+                onPressed: _endSession,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF8A66),
+                  foregroundColor: const Color(0xFF1A233A),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'END SESSION',
+                  style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 1.2),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void _refreshGrid() {
+    _initializeGridData();
+    targetTimers.values.forEach((t) => t.cancel());
+    targetTimers.clear();
+    activeTargets.clear();
+    _spawnTarget();
+    setState(() {});
+  }
+
+  void _endSession() {
+    // Cancel all timers to prevent async leaks before popping
+    _masterSpawnTimer?.cancel();
+    targetTimers.values.forEach((t) => t.cancel());
+    // dispose() will call completeSession() automatically on pop
+    Navigator.of(context).pop();
   }
 }
 
@@ -638,29 +674,25 @@ class ShapeCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1,
-            ),
-          ),
-          child: IgnorePointer(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ModelShapeRenderer(
-                baseAttributes: baseAttributes,
-                mutationSpawnTime: mutationSpawnTime,
-                mutation: mutation,
-                isSuccessPulse: isSuccessPulse,
-              ),
-            ),
+    // Glassmorphism border/background is kept per-cell.
+    // BackdropFilter removed from parent Stack to fix HtmlElementView visibility on Flutter web.
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: IgnorePointer(
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: ModelShapeRenderer(
+            baseAttributes: baseAttributes,
+            mutationSpawnTime: mutationSpawnTime,
+            mutation: mutation,
+            isSuccessPulse: isSuccessPulse,
           ),
         ),
       ),
@@ -750,12 +782,16 @@ class _ModelShapeRendererState extends State<ModelShapeRenderer>
           finalScale *= (1.0 + time * 0.1); // Constant ambient breathing
         }
 
-        Widget viewer = const IgnorePointer(
-          child: Flutter3DViewer(
-            src: 'assets/3D/Meshy_AI_Crimson_Ember_Lamp_0226174821_texture.glb',
-            progressBarColor: Colors.transparent,
-            enableTouch: false, // Ensures tap events bubble up to the GestureDetector
-          ),
+        // NOTE: NOT const — each grid cell must have its own unique widget
+        // instance so Flutter creates separate HtmlElementView states on web.
+        // A shared `const` singleton causes element reconciliation issues.
+        Widget viewer = Flutter3DViewer(
+          key: ValueKey('opal_${widget.baseAttributes.hashCode}'),
+          src: 'assets/3D/Meshy_AI_Crimson_Ember_Lamp_0226174821_texture.glb',
+          progressBarColor: Colors.transparent,
+          enableTouch: false,
+          onError: (err) => debugPrint('🔴 Flutter3DViewer error: $err'),
+          onLoad: (addr) => debugPrint('✅ Flutter3DViewer loaded: $addr'),
         );
 
         // Apply Color Mutation via Ambient Behind Glow

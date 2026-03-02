@@ -17,7 +17,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int _selectedGridSize = 4;
+  int _selectedColumns = 4;
+  int _selectedRows = 4;
+  int _selectedDurationMinutes = 5;
   Soundscape _selectedSoundscape = Soundscape.oceanWaves;
   TimeOfDay? _selectedZenTime;
   late EconomyService _economyService;
@@ -31,7 +33,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   int get _currentCost {
     final settings = GameSettings(
-      gridSize: _selectedGridSize,
+      gridColumns: _selectedColumns,
+      gridRows: _selectedRows,
+      sessionDuration: Duration(minutes: _selectedDurationMinutes),
       soundscape: _selectedSoundscape,
     );
     return settings.calculateOpalCost(
@@ -41,7 +45,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _onBegin() async {
     final settings = GameSettings(
-      gridSize: _selectedGridSize,
+      gridColumns: _selectedColumns,
+      gridRows: _selectedRows,
+      sessionDuration: Duration(minutes: _selectedDurationMinutes),
       soundscape: _selectedSoundscape,
     );
     final cost = _currentCost;
@@ -135,6 +141,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSectionHeader('COMPLEXITY'),
                   const SizedBox(height: 16),
                   _buildGridSizeSelector(),
+                  const SizedBox(height: 32),
+
+                  // Session Duration Selector
+                  _buildSectionHeader('SESSION DURATION'),
+                  const SizedBox(height: 16),
+                  _buildDurationSelector(),
                   const SizedBox(height: 40),
 
                   // Soundscape Selector
@@ -202,13 +214,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildGridSizeSelector() {
+    // (columns, rows, label)
+    const options = [
+      (2, 2, '2×2'),
+      (3, 3, '3×3'),
+      (4, 3, '4×3'),
+      (4, 4, '4×4'),
+    ];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: options.map((opt) {
+        final isSelected = _selectedColumns == opt.$1 && _selectedRows == opt.$2;
+        return _buildGridChip(opt.$3, opt.$1, opt.$2, isSelected);
+      }).toList(),
+    );
+  }
+
+  Widget _buildGridChip(String label, int cols, int rows, bool isSelected) {
+    return GestureDetector(
+      onTap: () => setState(() {
+        _selectedColumns = cols;
+        _selectedRows = rows;
+      }),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFF8A66).withOpacity(0.2)
+              : const Color(0xFF222E4A).withOpacity(0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFF8A66) : Colors.white.withOpacity(0.1),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFFFF8A66) : const Color(0xFFF8F9FA),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDurationSelector() {
+    const durations = [3, 5, 10, 15, 20];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildChoiceChip('2x2', 2, _selectedGridSize, (val) => setState(() => _selectedGridSize = val)),
-        _buildChoiceChip('3x3', 3, _selectedGridSize, (val) => setState(() => _selectedGridSize = val)),
-        _buildChoiceChip('4x4', 4, _selectedGridSize, (val) => setState(() => _selectedGridSize = val)),
-      ],
+      children: durations
+          .map((min) => _buildChoiceChip(
+                '${min}m',
+                min,
+                _selectedDurationMinutes,
+                (val) => setState(() => _selectedDurationMinutes = val),
+              ))
+          .toList(),
     );
   }
 

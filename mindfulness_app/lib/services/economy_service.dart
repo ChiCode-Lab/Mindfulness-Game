@@ -3,8 +3,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/economy_state.dart';
 
 class EconomyService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  // Lazy getter — not accessed until _syncWithSupabase() / deductOpals() etc.
+  // This avoids a crash if EconomyService is instantiated before Supabase.initialize().
+  SupabaseClient get _supabase => Supabase.instance.client;
   EconomyState _state = EconomyState.initial();
+
 
   EconomyState get state => _state;
 

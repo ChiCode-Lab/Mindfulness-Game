@@ -36,7 +36,8 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
 
   int get _currentCost {
     final settings = GameSettings(
-      gridSize: _selectedGridSize,
+      gridColumns: _selectedGridSize,
+      gridRows: _selectedGridSize,
       sessionDuration: Duration(minutes: _selectedSessionLength),
       isMultiplayer: true,
     );

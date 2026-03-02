@@ -7,36 +7,46 @@ enum Soundscape {
 }
 
 class GameSettings {
-  int gridSize; // e.g., 2 for 2x2, 3 for 3x3, 4 for 4x4
+  int gridColumns; // columns (X axis)
+  int gridRows;    // rows (Y axis)
   Duration sessionDuration;
   Soundscape soundscape;
   bool isMultiplayer;
 
   GameSettings({
-    this.gridSize = 4,
+    this.gridColumns = 4,
+    this.gridRows = 4,
     this.sessionDuration = const Duration(minutes: 5),
     this.soundscape = Soundscape.none,
     this.isMultiplayer = false,
   });
 
-  // Calculate the total number of cells based on grid size
-  int get totalCells => gridSize * gridSize;
+  /// Total number of cells in the grid.
+  int get totalCells => gridColumns * gridRows;
 
-  // Calculate the Dynamic Opal Cost for this session
+  /// True if the grid is perfectly square.
+  bool get isSquare => gridColumns == gridRows;
+
+  /// Aspect ratio for the grid viewport (width / height).
+  double get aspectRatio => gridColumns / gridRows;
+
+  /// Backward-compat alias used by legacy code paths.
+  int get gridSize => gridColumns;
+
+  /// Calculate the Dynamic Opal Cost for this session.
   int calculateOpalCost({bool isPremiumAudio = false}) {
-    double baseCost = (gridSize * 2.0) + (sessionDuration.inMinutes * 5.0);
-    
+    double baseCost = (gridColumns * gridRows * 0.5) + (sessionDuration.inMinutes * 5.0);
+
     // Apply cooperative multiplier
     if (isMultiplayer) {
       baseCost *= 1.3;
     }
-    
+
     // Add premium audio flat fee
     if (isPremiumAudio) {
       baseCost += 20;
     }
-    
+
     return baseCost.round();
   }
 }
-
