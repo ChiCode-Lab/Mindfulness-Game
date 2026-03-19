@@ -245,6 +245,7 @@ class _CoopGameScreenState extends State<CoopGameScreen> {
             onTap: () => _onShapeTapped(index),
             behavior: HitTestBehavior.opaque,
             child: ShapeCell(
+              cellIndex: index,
               shapeType: _cellShapes[index],
               baseAttributes: _baseAttributes[index],
               mutationSpawnTime: isTarget ? _currentState!.spawnTimestamp : null,

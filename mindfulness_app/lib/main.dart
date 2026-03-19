@@ -569,6 +569,7 @@ class _GameScreenState extends State<GameScreen> {
               behavior: HitTestBehavior.opaque,
               child: ShapeCell(
                 key: ValueKey('cell_$index'),
+                cellIndex: index,
                 shapeType: cellShapes[index],
                 baseAttributes: baseAttributes[index],
                 mutationSpawnTime: spawnTime,
@@ -657,6 +658,7 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 class ShapeCell extends StatelessWidget {
+  final int cellIndex;
   final String shapeType;
   final ShapeBaseAttributes baseAttributes;
   final DateTime? mutationSpawnTime;
@@ -665,6 +667,7 @@ class ShapeCell extends StatelessWidget {
 
   const ShapeCell({
     super.key,
+    required this.cellIndex,
     required this.shapeType,
     required this.baseAttributes,
     this.mutationSpawnTime,
@@ -689,6 +692,7 @@ class ShapeCell extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(4.0),
           child: ModelShapeRenderer(
+            cellIndex: cellIndex,
             baseAttributes: baseAttributes,
             mutationSpawnTime: mutationSpawnTime,
             mutation: mutation,
@@ -701,6 +705,7 @@ class ShapeCell extends StatelessWidget {
 }
 
 class ModelShapeRenderer extends StatefulWidget {
+  final int cellIndex;
   final ShapeBaseAttributes baseAttributes;
   final DateTime? mutationSpawnTime;
   final MutationType? mutation;
@@ -708,6 +713,7 @@ class ModelShapeRenderer extends StatefulWidget {
 
   const ModelShapeRenderer({
     super.key,
+    required this.cellIndex,
     required this.baseAttributes,
     this.mutationSpawnTime,
     this.mutation,
@@ -749,8 +755,25 @@ class _ModelShapeRendererState extends State<ModelShapeRenderer>
 
   @override
   Widget build(BuildContext context) {
+    // Fix C: The Flutter3DViewer is built ONCE and passed as a stable `child`
+    // to AnimatedBuilder. This prevents the platform view from being
+    // destroyed and recreated on every animation tick (~60fps).
+    //
+    // Fix D: Key is tied to cellIndex (stable), not baseAttributes.hashCode.
+    // Previously the key changed whenever attributes changed, causing Flutter
+    // to destroy and re-create the entire WebView/SurfaceView each time.
+    final Widget stableViewer = Flutter3DViewer(
+      key: ValueKey('opal_${widget.cellIndex}'),
+      src: 'assets/3D/opal.glb',
+      progressBarColor: Colors.transparent,
+      enableTouch: false,
+      onError: (err) => debugPrint('🔴 Flutter3DViewer error: $err'),
+      onLoad: (addr) => debugPrint('✅ Flutter3DViewer loaded: $addr'),
+    );
+
     return AnimatedBuilder(
       animation: _ambientController,
+      child: stableViewer, // Fix C: viewer is NOT inside the builder callback
       builder: (context, child) {
         final time = _ambientController.value;
         double progress = 0.0;
@@ -782,17 +805,7 @@ class _ModelShapeRendererState extends State<ModelShapeRenderer>
           finalScale *= (1.0 + time * 0.1); // Constant ambient breathing
         }
 
-        // NOTE: NOT const — each grid cell must have its own unique widget
-        // instance so Flutter creates separate HtmlElementView states on web.
-        // A shared `const` singleton causes element reconciliation issues.
-        Widget viewer = Flutter3DViewer(
-          key: ValueKey('opal_${widget.baseAttributes.hashCode}'),
-          src: 'assets/3D/Meshy_AI_Crimson_Ember_Lamp_0226174821_texture.glb',
-          progressBarColor: Colors.transparent,
-          enableTouch: false,
-          onError: (err) => debugPrint('🔴 Flutter3DViewer error: $err'),
-          onLoad: (addr) => debugPrint('✅ Flutter3DViewer loaded: $addr'),
-        );
+        Widget viewer = child!; // Use the pre-built stable platform view
 
         // Apply Color Mutation via Ambient Behind Glow
         if (finalHue.abs() > 5.0) {
@@ -811,11 +824,20 @@ class _ModelShapeRendererState extends State<ModelShapeRenderer>
           );
         }
 
-        // Apply Opacity Mutation
-        viewer = Opacity(
-          opacity: finalOpacity.clamp(0.0, 1.0),
-          child: viewer,
-        );
+        // Fix A: Use ColorFilter instead of Opacity for platform view opacity.
+        // The Opacity widget requires a saveLayer call which Flutter's Impeller
+        // backend cannot apply to native platform views (Android SurfaceView),
+        // causing ImpellerValidationBreak and severe jank (173 skipped frames).
+        // ColorFilter.darken achieves the same visual result safely.
+        if (finalOpacity < 0.99) {
+          viewer = ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              Colors.black.withValues(alpha: (1.0 - finalOpacity).clamp(0.0, 1.0)),
+              BlendMode.darken,
+            ),
+            child: viewer,
+          );
+        }
 
         // Apply Scale, Length, Breadth, Orientation, Position Mutations
         viewer = Transform(

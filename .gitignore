@@ -41,3 +41,20 @@ nul
 parsed_convo*.txt
 extract*.js
 extract*.py
+
+# Secrets (never commit)
+**/supabase_config.dart
+**/.env.local
+
+# Large tool binaries
+**/gltfpack.exe
+
+# OpenCode agent data
+.opencode/
+
+# Screenshots / generated images
+screenshots/
+**/screenshots/
+
+# Stitch design tool config
+stitch.json

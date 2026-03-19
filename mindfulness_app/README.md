@@ -1,17 +1,51 @@
-# mindfulness_app
+# mindfulness_app — Flutter Project
 
-A new Flutter project.
+This is the Flutter application sub-project for ZenForest. For full project context, see the [root README](../README.md).
 
-## Getting Started
+## Setup
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run -d <device_id>
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Project Structure
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+lib/
+├── main.dart                     # App entry, theme, router
+├── models/                       # Pure data models (no Flutter deps)
+│   ├── zen_tree.dart             # ZenTreeData — daily tree state
+│   ├── game_metrics.dart         # PresenceLevel, DeepFocus
+│   ├── game_settings.dart        # GridSize, difficulty
+│   └── economy_state.dart        # Coin/leaf economy
+├── services/                     # Business logic
+│   ├── progress_service.dart     # FIFO presence queue, session tracking
+│   ├── economy_service.dart      # Leaf/coin economy + Supabase sync
+│   ├── multiplayer_service.dart  # Supabase Realtime co-op
+│   ├── notification_service.dart # Daily reminder scheduling
+│   ├── background_task_service.dart # Workmanager jobs
+│   └── soundscape_engine.dart    # Ambient audio
+├── screens/                      # Page-level widgets
+│   ├── onboarding_screen.dart
+│   ├── dashboard_screen.dart     # Home with game entry
+│   ├── forest_screen.dart        # Legacy Forest 3D grid
+│   ├── coop_game_screen.dart     # Co-op multiplayer gameplay
+│   ├── multiplayer_lobby_screen.dart
+│   └── settings_screen.dart
+└── widgets/                      # Reusable components
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+assets/
+├── 3D/                           # .glb models (tree_gn, opal, maple_tree)
+├── audio/                        # Ambient soundscape tracks
+└── web/                          # Three.js shader assets (WebView)
+```
+
+## Running Tests
+
+```bash
+flutter analyze
+flutter test
+```
+
+Feature tracking: `docs/zen-forest-features.json`

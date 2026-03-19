@@ -317,7 +317,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             // creates separate HtmlElementView states for normal vs anomaly cells.
             Widget viewer = Flutter3DViewer(
               key: ValueKey('onboarding_${isAnomaly ? 'anomaly' : 'normal'}'),
-              src: 'assets/3D/Meshy_AI_Crimson_Ember_Lamp_0226174821_texture.glb',
+              src: 'assets/3D/opal.glb',
               progressBarColor: Colors.transparent,
               enableTouch: false,
               onError: (err) => debugPrint('🔴 Onboarding viewer error: $err'),
