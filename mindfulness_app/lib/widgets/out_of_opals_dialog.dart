@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindfulness_app/services/economy_service.dart';
+import 'package:mindfulness_app/services/ad_service.dart';
 
 class OutOfOpalsDialog extends StatelessWidget {
   final EconomyService economyService;
@@ -36,9 +37,18 @@ class OutOfOpalsDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ElevatedButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
-                onAdWatched();
+                await AdService().showRewardedAd(
+                  // onRewarded: user completed watching — grant the Opals
+                  onRewarded: onAdWatched,
+                  // onFailed: no ad available — still grant Opals as graceful fallback
+                  // to avoid blocking the user. Log this for analytics.
+                  onFailed: () {
+                    debugPrint('AdService: Rewarded ad unavailable — granting Opals as fallback');
+                    onAdWatched();
+                  },
+                );
               },
               icon: const Icon(Icons.play_circle_outline, color: Colors.white),
               label: const Text('Watch Ad (+50 Opals)'),

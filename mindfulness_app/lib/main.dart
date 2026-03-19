@@ -14,12 +14,15 @@ import 'screens/onboarding_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/background_task_service.dart';
+import 'services/ad_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   await BackgroundTaskService().init();
   BackgroundTaskService().registerDynamicNudge();
+
+  await AdService().init();
 
   await Supabase.initialize(
     url: 'https://bnpoaydhzytfpkyghwky.supabase.co',

@@ -44,6 +44,7 @@ extract*.py
 
 # Secrets (never commit)
 **/supabase_config.dart
+**/ad_config.dart
 **/.env.local
 
 # Large tool binaries
