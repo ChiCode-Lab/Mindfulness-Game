@@ -15,25 +15,39 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/background_task_service.dart';
 import 'services/ad_service.dart';
+import 'services/subscription_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await BackgroundTaskService().init();
   BackgroundTaskService().registerDynamicNudge();
 
   await AdService().init();
 
   await Supabase.initialize(
-    url: 'https://bnpoaydhzytfpkyghwky.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJucG9heWRoenl0ZnBreWdod2t5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMzgwMzgsImV4cCI6MjA4NzcxNDAzOH0.5MOWBZzKaZY9x69XBi1e219KnaTefL1YZC-MNh6T0fk',
+    url: 'https://vnyjjdvobvrmsqwpdvpco.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZueWpkdm9idnJtc3F3cGR2cGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTkwNjQsImV4cCI6MjA4OTg3NTA2NH0.i5sgtH2I1X62qj9yR7HnVlU3Fd-a9z7fp2q260ZXTio',
   );
 
   final progressService = ProgressService();
   await progressService.init();
-  
+
   final prefs = await SharedPreferences.getInstance();
   final hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
+
+  // Resolve the user ID for RevenueCat — prefer authenticated Supabase
+  // user, fall back to the same device-local ID MultiplayerService uses.
+  // This ensures purchase history is correctly attributed per device/user.
+  final supabaseUserId =
+      Supabase.instance.client.auth.currentSession?.user.id;
+  final rcUserId = supabaseUserId ??
+      (prefs.getString('local_user_id') ?? 'anonymous_${DateTime.now().millisecondsSinceEpoch}');
+
+  // Init RevenueCat. Non-blocking — app launches even if RC is slow.
+  // syncSubscriptionStatus() inside EconomyService.init() will pick up
+  // the entitlement once RC responds.
+  await SubscriptionService().init(rcUserId);
 
   runApp(MindfulnessApp(
     progressService: progressService,

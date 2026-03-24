@@ -5,6 +5,8 @@ import '../services/economy_service.dart';
 import 'settings_screen.dart'; // To access SettingsScreen
 import 'multiplayer_lobby_screen.dart'; // To access Coop route
 import 'forest_screen.dart'; // To access Legacy Forest
+import 'paywall_screen.dart';
+import '../widgets/trial_nudge_banner.dart';
 
 class DashboardScreen extends StatefulWidget {
   final ProgressService progressService;
@@ -25,8 +27,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _multiplayerService = MultiplayerService();
     _economyService = EconomyService();
     _economyService.init().then((_) {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        // Check if trial has expired and user is not a paid subscriber.
+        // If so, push the mandatory PaywallScreen on first Dashboard load.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _checkForPaywallTrigger();
+        });
+      }
     });
+  }
+
+  void _checkForPaywallTrigger() {
+    final state = _economyService.state;
+    // Mandatory paywall if trial is over and no paid sub found
+    if (!state.isPremium &&
+        state.premiumTrialEnd != null &&
+        DateTime.now().isAfter(state.premiumTrialEnd!)) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PaywallScreen(
+            economyService: _economyService,
+            isMandatory: true,
+          ),
+        ),
+      );
+    }
   }
   
   void _navigateToSoloMode() {
@@ -115,6 +142,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               
               const SizedBox(height: 32),
+              TrialNudgeBanner(economyService: _economyService),
+              const SizedBox(height: 16),
               
               // Graph Area
               Padding(

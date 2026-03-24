@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:mindfulness_app/services/economy_service.dart';
 import 'package:mindfulness_app/services/ad_service.dart';
+import '../screens/paywall_screen.dart';
 
 class OutOfOpalsDialog extends StatelessWidget {
   final EconomyService economyService;
@@ -72,6 +72,32 @@ class OutOfOpalsDialog extends StatelessWidget {
                 foregroundColor: const Color(0xFFFF8A66),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog first
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PaywallScreen(
+                      economyService: economyService,
+                      isMandatory: false,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFF8A66)),
+              label: const Text('Go Premium'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A233A),
+                foregroundColor: const Color(0xFFFF8A66),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Color(0xFFFF8A66), width: 1),
+                ),
               ),
             ),
             const SizedBox(height: 12),

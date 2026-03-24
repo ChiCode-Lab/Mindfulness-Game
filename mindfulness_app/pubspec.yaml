@@ -39,6 +39,7 @@ dependencies:
   flutter_local_notifications: ^20.1.0
   workmanager: ^0.9.0+3
   google_mobile_ads: ^7.0.0
+  purchases_flutter: ^9.15.1
 
 dev_dependencies:
   flutter_test:

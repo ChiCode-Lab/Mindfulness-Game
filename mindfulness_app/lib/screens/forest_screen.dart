@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/zen_tree.dart';
 import '../services/progress_service.dart';
 import '../services/economy_service.dart';
+import 'paywall_screen.dart';
 
 /// Bento-grid screen showing past (legacy) Zen Trees.
 ///
@@ -142,6 +143,7 @@ class _ForestScreenState extends State<ForestScreen> {
                             tree: tree,
                             dayIndex: index,
                             isLocked: isLocked,
+                            economyService: _economyService,
                           );
                         },
                       ),
@@ -195,17 +197,29 @@ class _ForestCard extends StatelessWidget {
   final ZenTreeData tree;
   final int dayIndex;
   final bool isLocked;
+  final EconomyService economyService;
 
   const _ForestCard({
     required this.tree,
     required this.dayIndex,
     required this.isLocked,
+    required this.economyService,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isLocked ? null : () => _showTreeDetails(context),
+      onTap: isLocked
+          ? () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PaywallScreen(
+                    economyService: economyService,
+                    isMandatory: false,
+                  ),
+                ),
+              )
+          : () => _showTreeDetails(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
@@ -357,7 +371,7 @@ class _ForestCard extends StatelessWidget {
               Icon(
                 Icons.lock_rounded,
                 color: Colors.white.withOpacity(0.25),
-                size: 32,
+                size: 28,
               ),
               const SizedBox(height: 8),
               Text(
@@ -366,6 +380,29 @@ class _ForestCard extends StatelessWidget {
                   color: Colors.white.withOpacity(0.35),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              // Tap hint — subtle but discoverable
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF8A66).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFFF8A66).withOpacity(0.25),
+                  ),
+                ),
+                child: const Text(
+                  'Unlock ✨',
+                  style: TextStyle(
+                    color: Color(0xFFFF8A66),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
