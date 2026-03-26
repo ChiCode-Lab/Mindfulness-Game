@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mindfulness_app/models/game_metrics.dart';
+import 'package:mindaware/models/game_metrics.dart';
 
 void main() {
   group('GameMetrics – Deep Focus Logic', () {

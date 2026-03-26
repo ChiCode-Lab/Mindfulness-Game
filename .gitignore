@@ -45,7 +45,12 @@ extract*.py
 # Secrets (never commit)
 **/supabase_config.dart
 **/ad_config.dart
-**/.env.local
+**/.env
+**/.env.*
+**/key.properties
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
 
 # Large tool binaries
 **/gltfpack.exe

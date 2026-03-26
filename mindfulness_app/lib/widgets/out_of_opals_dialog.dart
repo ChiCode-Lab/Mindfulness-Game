@@ -1,7 +1,7 @@
-import 'package:mindfulness_app/services/economy_service.dart';
-import 'package:mindfulness_app/services/ad_service.dart';
+import 'package:flutter/material.dart';
+import 'package:mindaware/services/economy_service.dart';
+import 'package:mindaware/services/ad_service.dart';
 import '../screens/paywall_screen.dart';
-
 class OutOfOpalsDialog extends StatelessWidget {
   final EconomyService economyService;
   final VoidCallback onAdWatched;
@@ -51,7 +51,7 @@ class OutOfOpalsDialog extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.play_circle_outline, color: Colors.white),
-              label: const Text('Watch Ad (+50 Opals)'),
+              label: const Text('Watch Ad (+25 Opals)'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50).withAlpha(200),
                 foregroundColor: Colors.white,

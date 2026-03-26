@@ -34,7 +34,6 @@ class EconomyService {
     // Sync both Supabase economy data and RevenueCat entitlement in parallel.
     // Neither blocks the other — both update state independently.
     _syncWithSupabase();
-    syncSubscriptionStatus();
   }
 
   Future<void> _syncWithSupabase() async {
@@ -99,31 +98,74 @@ class EconomyService {
     );
   }
 
-  // Streak-scaling daily Opal reward. Called once per calendar day on
-  // app open. Guard prevents double-claiming on the same day.
+  // Checks both local SharedPreferences (fast, offline-safe) and
+  // Supabase last_daily_reward column (source of truth).
+  // Supabase column prevents double-claiming across device reinstalls.
   Future<int> claimDailyOpalReward(int currentStreak) async {
     final prefs = await SharedPreferences.getInstance();
-    final lastClaimStr = prefs.getString('last_daily_opal_claim');
+    final today = DateTime.now();
+    final todayDateStr = '${today.year}-${today.month}-${today.day}';
 
-    if (lastClaimStr != null) {
-      final lastClaim = DateTime.parse(lastClaimStr);
-      final today = DateTime.now();
-      final isSameDay = lastClaim.year == today.year &&
-          lastClaim.month == today.month &&
-          lastClaim.day == today.day;
-      if (isSameDay) return 0; // Already claimed today
+    // Fast local guard — avoids a Supabase round-trip on repeat opens.
+    final localLastClaim = prefs.getString('last_daily_opal_claim');
+    if (localLastClaim != null) {
+      final lastClaim = DateTime.tryParse(localLastClaim);
+      if (lastClaim != null) {
+        final isSameDay = lastClaim.year == today.year &&
+            lastClaim.month == today.month &&
+            lastClaim.day == today.day;
+        if (isSameDay) return 0;
+      }
     }
 
+    // Supabase guard — source of truth, prevents cross-device double-claim.
+    final user = _supabase.auth.currentSession?.user;
+    if (user != null) {
+      final row = await _supabase
+          .from('user_economy')
+          .select('last_daily_reward')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (row != null && row['last_daily_reward'] != null) {
+        final supabaseLastClaim =
+            DateTime.tryParse(row['last_daily_reward'] as String);
+        if (supabaseLastClaim != null) {
+          final isSameDay = supabaseLastClaim.year == today.year &&
+              supabaseLastClaim.month == today.month &&
+              supabaseLastClaim.day == today.day;
+          if (isSameDay) {
+            // Sync local flag to match Supabase so future opens skip round-trip.
+            await prefs.setString(
+              'last_daily_opal_claim',
+              supabaseLastClaim.toIso8601String(),
+            );
+            return 0;
+          }
+        }
+      }
+    }
+
+    // Neither guard triggered — award the reward.
     final reward = _opalRewardForStreak(currentStreak);
     await addOpals(reward);
+
+    // Persist locally.
     await prefs.setString(
       'last_daily_opal_claim',
-      DateTime.now().toIso8601String(),
+      today.toIso8601String(),
     );
 
+    // Persist to Supabase last_daily_reward column.
+    if (user != null) {
+      await _supabase.from('user_economy').update({
+        'last_daily_reward': today.toIso8601String(),
+      }).eq('id', user.id);
+    }
+
     debugPrint(
-      'EconomyService: daily reward claimed — $reward Opals '
-      '(streak: $currentStreak)',
+      'EconomyService: daily Opal reward claimed — '
+      '$reward Opals (streak: $currentStreak, day: $todayDateStr)',
     );
     return reward;
   }

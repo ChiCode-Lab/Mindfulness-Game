@@ -29,10 +29,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _economyService.init().then((_) {
       if (mounted) {
         setState(() {});
-        // Check if trial has expired and user is not a paid subscriber.
-        // If so, push the mandatory PaywallScreen on first Dashboard load.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _checkForPaywallTrigger();
+        _checkForPaywallTrigger();
+
+        // Claim daily Opal reward after economy is initialised.
+        // currentStreak comes from ProgressService which is already
+        // loaded before DashboardScreen is constructed.
+        _economyService
+            .claimDailyOpalReward(widget.progressService.currentStreak)
+            .then((reward) {
+          if (reward > 0 && mounted) {
+            // Show a non-intrusive snackbar so the user knows they earned Opals.
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.diamond, color: Color(0xFFFF8A66), size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      '+$reward Opals — Daily Reward 🌿',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF222E4A),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            // Refresh UI to show updated Opal balance in header.
+            setState(() {});
+          }
         });
       }
     });

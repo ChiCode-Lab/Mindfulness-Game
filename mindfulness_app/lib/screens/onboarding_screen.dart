@@ -3,6 +3,7 @@ import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/progress_service.dart';
+import '../services/deep_link_service.dart';
 import 'dashboard_screen.dart';
 
 /// One tutorial slide definition.
@@ -129,13 +130,26 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
+        // 1. Mark onboarding as complete in cloud
         await Supabase.instance.client.from('user_profiles').upsert({
           'id': user.id,
           'has_completed_onboarding': true,
         });
+
+        // 2. Check for and apply referral attribution
+        final referrerId = await DeepLinkService().getPendingReferrer();
+        if (referrerId != null) {
+          await Supabase.instance.client.from('user_profiles').update({
+            'referred_by': referrerId,
+          }).eq('id', user.id);
+          
+          debugPrint('Viral Attribution: Successfully linked user ${user.id} to referrer $referrerId');
+          // Clear pending referrer now that it's attributed
+          await DeepLinkService().clearPendingReferrer();
+        }
       }
     } catch (e) {
-      debugPrint('Supabase sync failed: $e');
+      debugPrint('Supabase onboarding/referral sync failed: $e');
     }
 
     if (!mounted) return;
@@ -378,7 +392,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             radius: 1.5,
             colors: [
               Color(0xFF2D1B4E),
-              Color(0xFF0D1B2A),
+              Color(0xFF1A233A),
             ],
             stops: [0.1, 1.0],
           ),

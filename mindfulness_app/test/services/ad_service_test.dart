@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mindfulness_app/services/ad_service.dart';
+import 'package:mindaware/services/ad_service.dart';
 
 void main() {
   group('AdService', () {

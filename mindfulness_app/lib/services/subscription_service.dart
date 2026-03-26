@@ -3,8 +3,8 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 
 // Product IDs must match exactly what is configured in
 // Google Play Console and RevenueCat dashboard.
-const String _kMonthlyProductId = 'zenforest_premium_monthly';
-const String _kAnnualProductId  = 'zenforest_premium_annual';
+const String _kMonthlyProductId = 'mindaware_premium_monthly';
+const String _kAnnualProductId  = 'mindaware_premium_annual';
 const String _kEntitlementId    = 'premium';
 
 class SubscriptionService {
@@ -67,9 +67,9 @@ class SubscriptionService {
       return false;
     }
 
-    final customerInfo = await Purchases.purchasePackage(package);
+    final result = await Purchases.purchasePackage(package);
     final isActive =
-        customerInfo.entitlements.active.containsKey(_kEntitlementId);
+        result.customerInfo.entitlements.active.containsKey(_kEntitlementId);
     debugPrint(
       'SubscriptionService: purchase result for $productId — active: $isActive',
     );

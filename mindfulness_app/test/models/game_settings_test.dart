@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mindfulness_app/models/game_settings.dart';
+import 'package:mindaware/models/game_settings.dart';
 
 void main() {
   group('GameSettings – Grid Configuration', () {

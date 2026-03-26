@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mindfulness_app/main.dart';
+import 'package:mindaware/main.dart';
 import 'dart:ui';
 import 'dart:math';
 

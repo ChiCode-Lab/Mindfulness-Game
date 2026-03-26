@@ -1,35 +1,36 @@
 -- Viral Rewards System: Referral "Plant a Tree" Loop
 -- Trigger fires when a new user completes their first solo mindfulness session
 
--- Step 1: Create user_profiles table with referred_by field (extends auth.users)
+-- 1. User profiles (extends auth.users)
 CREATE TABLE IF NOT EXISTS public.user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     referred_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    username TEXT,
+    username TEXT UNIQUE,
     is_public BOOLEAN DEFAULT false,
+    has_completed_onboarding BOOLEAN DEFAULT false,
+    current_streak INTEGER DEFAULT 0,
+    longest_streak INTEGER DEFAULT 0,
+    total_mindful_minutes INTEGER DEFAULT 0,
+    last_meditated_date TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Enable RLS for user_profiles
-ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+-- 2. User economy (Source of Truth for Opals and Subscription)
+CREATE TABLE IF NOT EXISTS public.user_economy (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    opals_balance INTEGER DEFAULT 100,
+    is_paid_subscriber BOOLEAN DEFAULT false,
+    premium_source TEXT DEFAULT 'none', -- 'none', 'trial', 'revenuecat'
+    premium_trial_end TIMESTAMPTZ,
+    subscription_status TEXT DEFAULT 'free',
+    last_daily_reward TIMESTAMPTZ,
+    referred_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
--- Allow users to read their own profile
-CREATE POLICY "Users can view own profile"
-    ON public.user_profiles FOR SELECT
-    USING (auth.uid() = id);
-
--- Allow users to update their own profile
-CREATE POLICY "Users can update own profile"
-    ON public.user_profiles FOR UPDATE
-    USING (auth.uid() = id);
-
--- Allow authenticated users to insert their own profile
-CREATE POLICY "Users can insert own profile"
-    ON public.user_profiles FOR INSERT
-    WITH CHECK (auth.uid() = id);
-
--- Step 2: Create progress table for session tracking
+-- 3. Progress tracking
 CREATE TABLE IF NOT EXISTS public.progress (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -41,91 +42,91 @@ CREATE TABLE IF NOT EXISTS public.progress (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Index for faster lookup of user's progress records
-CREATE INDEX IF NOT EXISTS idx_progress_user_id ON public.progress(user_id);
-CREATE INDEX IF NOT EXISTS idx_progress_session_date ON public.progress(session_date);
+-- 4. Legacy forest (Synced trees)
+CREATE TABLE IF NOT EXISTS public.legacy_forest (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    tree_data JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
--- Enable RLS for progress
-ALTER TABLE public.progress ENABLE ROW LEVEL SECURITY;
-
--- Allow users to read their own progress
-CREATE POLICY "Users can view own progress"
-    ON public.progress FOR SELECT
-    USING (auth.uid() = user_id);
-
--- Allow authenticated users to insert their own progress
-CREATE POLICY "Users can insert own progress"
-    ON public.progress FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
-
--- Step 3: Create legacy_trees table for gifted trees
+-- 5. Gifted trees tracking (Unique referral trees)
 CREATE TABLE IF NOT EXISTS public.legacy_trees (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     gifted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    status TEXT NOT NULL DEFAULT 'planted', -- 'planted', 'growing', 'mature'
+    status TEXT NOT NULL DEFAULT 'planted',
     tree_type TEXT DEFAULT 'gifted_oak',
     leaf_count INTEGER DEFAULT 0,
     planted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Index for faster lookup
-CREATE INDEX IF NOT EXISTS idx_legacy_trees_user_id ON public.legacy_trees(user_id);
+-- RLS POLICIES --
 
--- Enable RLS for legacy_trees
+-- user_profiles
+ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own profile" ON public.user_profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON public.user_profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Profiles are public if is_public is true" ON public.user_profiles FOR SELECT USING (is_public = true);
+
+-- user_economy
+ALTER TABLE public.user_economy ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own economy" ON public.user_economy FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can insert own economy" ON public.user_economy FOR INSERT WITH CHECK (auth.uid() = id);
+-- Note: Update is usually handled via server-side functions or limited fields, but for now let's allow own update
+CREATE POLICY "Users can update own economy" ON public.user_economy FOR UPDATE USING (auth.uid() = id);
+
+-- progress
+ALTER TABLE public.progress ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own progress" ON public.progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own progress" ON public.progress FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- legacy_forest
+ALTER TABLE public.legacy_forest ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own legacy forest" ON public.legacy_forest FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own legacy forest" ON public.legacy_forest FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- Allow public viewing of forest if the profile is public
+CREATE POLICY "Public can view forest of public profiles" ON public.legacy_forest FOR SELECT 
+USING (EXISTS (SELECT 1 FROM public.user_profiles WHERE id = user_id AND is_public = true));
+
+-- legacy_trees
 ALTER TABLE public.legacy_trees ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own legacy trees" ON public.legacy_trees FOR SELECT USING (auth.uid() = user_id);
 
--- Allow users to read their own legacy trees
-CREATE POLICY "Users can view own legacy trees"
-    ON public.legacy_trees FOR SELECT
-    USING (auth.uid() = user_id);
+-- TRIGGER LOGIC --
 
--- Allow users to read gifted trees (for inviter's forest)
-CREATE POLICY "Users can view gifted trees"
-    ON public.legacy_trees FOR SELECT
-    USING (auth.uid() = user_id);
-
--- Step 4: Create the referral rewards trigger function
--- This trigger fires AFTER INSERT on progress table
 CREATE OR REPLACE FUNCTION public.handle_referral_rewards()
 RETURNS TRIGGER AS $$
 DECLARE
     inviter_id UUID;
     first_session_count INTEGER;
 BEGIN
-    -- Only process standard solo sessions
     IF NEW.session_type != 'solo' THEN
         RETURN NEW;
     END IF;
 
-    -- Check if this is the user's first progress record (first solo session)
     SELECT COUNT(*) INTO first_session_count
     FROM public.progress
     WHERE user_id = NEW.user_id;
 
-    -- Only proceed if this is their first session
     IF first_session_count = 1 THEN
-        -- Find if they were referred
         SELECT referred_by INTO inviter_id
         FROM public.user_profiles
         WHERE id = NEW.user_id;
 
-        -- If user was referred by someone
         IF inviter_id IS NOT NULL THEN
-            -- Deposit +100 Opals to Inviter's account
             UPDATE public.user_economy
             SET opals_balance = opals_balance + 100,
                 updated_at = NOW()
             WHERE id = inviter_id;
 
-            -- Deposit +50 Opals to Friend's account
             UPDATE public.user_economy
             SET opals_balance = opals_balance + 50,
                 updated_at = NOW()
             WHERE id = NEW.user_id;
 
-            -- Spawn a unique "Tree" record in legacy_trees for the Inviter
             INSERT INTO public.legacy_trees (user_id, gifted_by, status, tree_type)
             VALUES (inviter_id, NEW.user_id, 'planted', 'gifted_oak');
         END IF;
@@ -135,16 +136,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Drop trigger if exists (for idempotency)
 DROP TRIGGER IF EXISTS on_first_session_complete ON public.progress;
-
--- Create the trigger on progress table
 CREATE TRIGGER on_first_session_complete
     AFTER INSERT ON public.progress
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_referral_rewards();
 
--- Step 5: Add referred_by column to existing user_economy if needed (for convenience)
--- This provides a shortcut to access referral info alongside opals
-ALTER TABLE public.user_economy
-ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+-- Initial Population (Optional convenience)
+-- This trigger handles profile/economy creation on user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, username, is_public)
+  VALUES (NEW.id, 'user_' || substr(NEW.id::text, 1, 8), false);
+
+  INSERT INTO public.user_economy (id)
+  VALUES (NEW.id);
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

@@ -8,14 +8,14 @@
 
 ### Task 1: Implement Boundary State tracking in `ShapeBaseAttributes`
 **Engineering Paths:**
-- Leverage: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindfulness_app\lib\main.dart:lines` (ShapeBaseAttributes class)
-- Test: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindfulness_app\test\mechanics_bounds_test.dart`
+- Leverage: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindaware\lib\main.dart:lines` (ShapeBaseAttributes class)
+- Test: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindaware\test\mechanics_bounds_test.dart`
 
 **Step 1: Red Stage** (Write failing test)
 ```dart
 // test/mechanics_bounds_test.dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mindfulness_app/main.dart';
+import 'package:mindaware/main.dart';
 import 'dart:ui';
 
 void main() {
@@ -51,8 +51,8 @@ Run `flutter test test/mechanics_bounds_test.dart` and confirm "Precision Succes
 
 ### Task 2: Implement Clamping and Reversal Logic in `_applyMutation`
 **Engineering Paths:**
-- Leverage: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindfulness_app\lib\main.dart` (`_applyMutation` function)
-- Test: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindfulness_app\test\mechanics_bounds_test.dart`
+- Leverage: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindaware\lib\main.dart` (`_applyMutation` function)
+- Test: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindaware\test\mechanics_bounds_test.dart`
 
 **Step 1: Red Stage** (Expand failing test)
 Update the test to apply consecutive mutations and assert the bounds:
@@ -88,7 +88,7 @@ Run `flutter test test/mechanics_bounds_test.dart` and confirm "Precision Succes
 
 ### Task 3: Render Subsystem Update
 **Engineering Paths:**
-- Leverage: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindfulness_app\lib\main.dart` (`_ModelShapeRendererState.build`)
+- Leverage: `c:\Users\user\Desktop\ChiCode\Apps\Minfulness App\mindaware\lib\main.dart` (`_ModelShapeRendererState.build`)
 
 **Step 1: Visual Regression Prep**
 Review current render logic. The renderer currently adds multipliers locally.

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/zen_tree.dart';
 import 'package:flutter/foundation.dart';
+import 'deep_link_service.dart';
 
 class ProgressService {
   static const String _todayTreeKey = 'today_zen_tree';
@@ -12,7 +13,6 @@ class ProgressService {
   static const String _longestStreakKey = 'longest_streak';
   static const String _lastMeditatedKey = 'last_meditated_date';
   static const String _totalMinutesKey = 'total_mindful_minutes';
-  static const String _sessionPointsKey = 'session_presence_points_ephemeral'; // In-memory typically, but let's be safe
   static const String _presencePointsKey = 'presence_points_daily';
 
   /// Initial baseline for presence level (Metric 1 & 2 start at 100/100).
@@ -63,9 +63,6 @@ class ProgressService {
     for (final p in _sessionPoints) {
       sum += p;
     }
-    // Baseline 100. If sum is -1, result is 99.
-    // Clamping at 100 means hits at the start don't increase it, 
-    // but the first miss will immediately drop it.
     return (presenceBaseline + sum).clamp(0, 100);
   }
 
@@ -78,14 +75,15 @@ class ProgressService {
     return (presenceBaseline + sum).clamp(0, 100);
   }
 
-  /// Normalized daily presence as a 0.0–1.0 ratio.
-  double get dailyPresenceRatio => dailyPresenceLevel / 100.0;
+  /// Metric 3: Presence-based streak modifier.
+  double get presenceStreakMultiplier {
+    return (dailyPresenceLevel / 100.0).clamp(0.5, 1.0);
+  }
 
-  /// Record a correct interaction (+1 point) for both Session and Daily levels.
+  /// Record a +1 (Success) point in the presence FIFO.
   Future<void> recordHit() async {
     await _addPresencePoint(1);
     
-    // Sync Metric 2 (Daily) to today's tree snapshot
     final today = getTodayTree();
     if (today != null) {
       today.presenceLevel = dailyPresenceLevel;
@@ -93,11 +91,10 @@ class ProgressService {
     }
   }
 
-  /// Record an incorrect / missed interaction (-1 point) for both Session and Daily levels.
+  /// Record a -1 (Failure) point in the presence FIFO.
   Future<void> recordMiss() async {
     await _addPresencePoint(-1);
     
-    // Sync Metric 2 (Daily) to today's tree snapshot
     final today = getTodayTree();
     if (today != null) {
       today.presenceLevel = dailyPresenceLevel;
@@ -105,15 +102,12 @@ class ProgressService {
     }
   }
 
-  /// Internal: append a point to BOTH sub-queues (Session and Daily).
   Future<void> _addPresencePoint(int point) async {
-    // 1. Update Ephemeral Session Points
     _sessionPoints.add(point);
     while (_sessionPoints.length > presenceFifoCap) {
       _sessionPoints.removeAt(0);
     }
-
-    // 2. Update Persistent Daily Points
+    
     final jsonStr = _prefs.getString(_presencePointsKey);
     List<int> currentDaily = [];
     if (jsonStr != null) {
@@ -153,7 +147,6 @@ class ProgressService {
     final diff = todayDate.difference(lastDate).inDays;
     
     if (diff > 1) {
-      // Streak broken.
       _prefs.setInt(_currentStreakKey, 0);
     }
   }
@@ -175,8 +168,6 @@ class ProgressService {
       } else if (diff > 1) {
         newStreak = 1;
       }
-      // If diff == 0, we already meditated today (or last date was today), so streak is already +1 or started for today.
-      // Wait, if diff == 0 but currentStreak == 0 (e.g. manually cleared or fresh), we should ensure it is at least 1.
       if (diff == 0 && newStreak == 0) {
         newStreak = 1;
       }
@@ -193,10 +184,10 @@ class ProgressService {
     await _prefs.setString(_lastMeditatedKey, now.toIso8601String());
     await _prefs.setInt(_totalMinutesKey, newTotal);
     
-    _syncToSupabase(newStreak, newLongest, newTotal, now);
+    _syncToSupabase(newStreak, newLongest, newTotal, now, durationMinutes);
   }
 
-  Future<void> _syncToSupabase(int streak, int longest, int minutes, DateTime lastDate) async {
+  Future<void> _syncToSupabase(int streak, int longest, int minutes, DateTime lastDate, int sessionDuration) async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) return;
@@ -208,6 +199,24 @@ class ProgressService {
         'total_mindful_minutes': minutes,
         'last_meditated_date': lastDate.toIso8601String(),
       });
+
+      final countRes = await Supabase.instance.client
+          .from('progress')
+          .select('id', const FetchOptions(count: CountOption.exact))
+          .eq('user_id', user.id);
+      
+      final isFirstOverall = countRes.count == 0;
+
+      await Supabase.instance.client.from('progress').insert({
+        'user_id': user.id,
+        'session_type': 'solo',
+        'duration_seconds': sessionDuration * 60,
+      });
+
+      if (isFirstOverall) {
+        debugPrint('First session recorded — Triggering referral logic in SQL');
+      }
+
     } catch (e) {
       debugPrint('Streak sync failed: $e');
     }
@@ -217,14 +226,10 @@ class ProgressService {
     final today = getTodayTree();
     final now = DateTime.now();
 
-    // If there is no tree, or the tree is from a previous day
     if (today == null || now.difference(today.date).inDays > 0 || now.day != today.date.day) {
       if (today != null && today.leafCount > 0) {
-        _moveToLegacyForest(today);
+        await _moveToLegacyForest(today);
       }
-
-      // Must await — resetPresencePoints sets _sessionPoints = [] asynchronously.
-      // Without await, this can race with _addPresencePoint and wipe a newly added point.
       await resetPresencePoints();
 
       final newTree = ZenTreeData(date: now, leafCount: 0, presenceLevel: presenceBaseline);
@@ -250,8 +255,6 @@ class ProgressService {
       today.leafCount += 1;
       await _saveTodayTree(today);
     }
-    // Updating leafCount THEN recording hit ensures the tree's final state for the session
-    // takes into account the last action's presence impact via recordHit's auto-sync.
     await recordHit();
   }
 
@@ -259,10 +262,46 @@ class ProgressService {
     await _prefs.setString(_todayTreeKey, jsonEncode(tree.toJson()));
   }
 
-  void _moveToLegacyForest(ZenTreeData tree) {
+  Future<void> _moveToLegacyForest(ZenTreeData tree) async {
     List<String> legacyJsonList = _prefs.getStringList(_legacyForestKey) ?? [];
     legacyJsonList.add(jsonEncode(tree.toJson()));
-    _prefs.setStringList(_legacyForestKey, legacyJsonList);
+    await _prefs.setStringList(_legacyForestKey, legacyJsonList);
+
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        await Supabase.instance.client.from('legacy_forest').insert({
+          'user_id': user.id,
+          'tree_data': tree.toJson(),
+          'created_at': tree.date.toIso8601String(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Legacy forest sync failed: $e');
+    }
+  }
+
+  Future<List<ZenTreeData>> fetchPublicForest(String username) async {
+    try {
+      final profileRes = await Supabase.instance.client
+          .from('user_profiles')
+          .select('id')
+          .eq('username', username)
+          .single();
+      
+      final userId = profileRes['id'];
+
+      final List<dynamic> res = await Supabase.instance.client
+          .from('legacy_forest')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      return res.map((item) => ZenTreeData.fromJson(item['tree_data'])).toList();
+    } catch (e) {
+      debugPrint('Failed to fetch public forest: $e');
+      return [];
+    }
   }
 
   List<ZenTreeData> getLegacyForest() {

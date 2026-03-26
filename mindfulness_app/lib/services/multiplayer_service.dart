@@ -118,6 +118,41 @@ class MultiplayerService {
     return true;
   }
 
+  /// Special bypass for first-time invited users (Viral Engine).
+  Future<bool> joinFreeRoom(String roomId) async {
+    // Basic validation: ensures room is still active and has space
+    final room = await _supabase
+        .from('zen_rooms')
+        .select()
+        .eq('room_id', roomId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+    if (room == null || room['player_2_id'] != null) {
+      return false;
+    }
+
+    // Join without cost check
+    await _supabase
+        .from('zen_rooms')
+        .update({'player_2_id': localUserId})
+        .eq('room_id', roomId);
+    return true;
+  }
+
+  Future<bool> isFirstCoopSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    // We check both local state and theoretically Supabase (if Big Pickle's migration is ready)
+    // For now, local-first is safest for MVP/Demo
+    final used = prefs.getBool('used_free_coop_session') ?? false;
+    return !used;
+  }
+
+  Future<void> markFreeCoopUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('used_free_coop_session', true);
+  }
+
   // -------------------------------------------------------------
   // Matchmaking (RPC)
   // -------------------------------------------------------------

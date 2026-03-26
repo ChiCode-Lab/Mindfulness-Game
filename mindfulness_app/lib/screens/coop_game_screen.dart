@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/game_settings.dart';
 import '../services/multiplayer_service.dart';
 import '../models/game_metrics.dart';
-import '../../main.dart'; // to grab ShapeCell and types
+import '../services/viral_share_service.dart';
+import '../../main.dart'; 
 
 class CoopGameScreen extends StatefulWidget {
   final MultiplayerService multiplayerService;
@@ -24,6 +25,8 @@ class _CoopGameScreenState extends State<CoopGameScreen> {
   late List<String> _cellShapes;
   late List<ShapeBaseAttributes> _baseAttributes;
   late Map<int, bool> _successPulses;
+  bool _showingEndDialog = false;
+
   
   RoomState? _currentState;
   bool _isInit = false;
@@ -67,9 +70,62 @@ class _CoopGameScreenState extends State<CoopGameScreen> {
           setState(() {
             _currentState = state;
           });
+
+          if (state.status == 'completed' && !_showingEndDialog) {
+             _showSessionSummary();
+          }
         }
       }
     });
+  }
+
+  void _showSessionSummary() {
+    setState(() => _showingEndDialog = true);
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RepaintBoundary(
+              key: ViralShareService.boundaryKey,
+              child: ViralShareService.buildShareCard(
+                leafCount: _currentState?.sharedLeafCount ?? 0,
+                mode: 'CO-OP ZEN',
+                date: '${DateTime.now().day}/${DateTime.now().month}',
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                  child: const Text('BACK HOME', style: TextStyle(color: Colors.white54)),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: () => ViralShareService.shareSession(
+                    leafCount: _currentState?.sharedLeafCount ?? 0,
+                    mode: 'CO-OP ZEN',
+                  ),
+                  icon: const Icon(Icons.share),
+                  label: const Text('GIFT CALM'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF8A66),
+                    foregroundColor: const Color(0xFF1A233A),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   ShapeBaseAttributes _applyMutationLocally(ShapeBaseAttributes base, MutationType type, DateTime spawn) {

@@ -11,11 +11,22 @@ import 'services/soundscape_engine.dart';
 import 'services/progress_service.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/coop_landing_screen.dart';
+import 'screens/public_forest_screen.dart';
+import 'services/multiplayer_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'services/soundscape_engine.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/background_task_service.dart';
 import 'services/ad_service.dart';
 import 'services/subscription_service.dart';
+import 'services/deep_link_service.dart';
+import 'services/viral_share_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final deepLinkService = DeepLinkService();
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,13 +60,17 @@ void main() async {
   // the entitlement once RC responds.
   await SubscriptionService().init(rcUserId);
 
+  // Init Deep Link handling for co-op invites and referral profiles
+  await deepLinkService.init();
+
+
   runApp(MindfulnessApp(
     progressService: progressService,
     hasCompletedOnboarding: hasCompletedOnboarding,
   ));
 }
 
-class MindfulnessApp extends StatelessWidget {
+class MindfulnessApp extends StatefulWidget {
   final ProgressService progressService;
   final bool hasCompletedOnboarding;
   
@@ -66,9 +81,61 @@ class MindfulnessApp extends StatelessWidget {
   });
 
   @override
+  State<MindfulnessApp> createState() => _MindfulnessAppState();
+}
+
+class _MindfulnessAppState extends State<MindfulnessApp> {
+  StreamSubscription? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start listening for viral co-op and referral links
+    _linkSubscription = deepLinkService.onLink.listen(_handleDeepLink);
+  }
+
+  void _handleDeepLink(DeepLinkResult result) {
+    if (result.roomId != null) {
+      _navigateToViralLanding(result.roomId!, result.referrerId);
+    } else if (result.forestUsername != null) {
+      _navigateToForest(result.forestUsername!);
+    }
+  }
+
+  void _navigateToViralLanding(String roomId, String? referrerId) {
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => CoOpLandingScreen(
+          roomId: roomId,
+          referrerId: referrerId,
+          progressService: widget.progressService,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToForest(String username) {
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => PublicForestScreen(
+          username: username,
+          progressService: widget.progressService,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mindfulness App',
+      title: 'MindAware',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -78,11 +145,12 @@ class MindfulnessApp extends StatelessWidget {
           bodyColor: const Color(0xFFF8F9FA),
           displayColor: const Color(0xFFF8F9FA),
         ),
-        scaffoldBackgroundColor: Colors.transparent, // Handled by gradient
+        scaffoldBackgroundColor: Colors.transparent, 
       ),
-      home: hasCompletedOnboarding 
-          ? DashboardScreen(progressService: progressService)
-          : OnboardingScreen(progressService: progressService),
+      home: SplashScreen(
+        progressService: widget.progressService,
+        hasCompletedOnboarding: widget.hasCompletedOnboarding,
+      ),
     );
   }
 }
@@ -287,6 +355,8 @@ class _GameScreenState extends State<GameScreen> {
   
   Timer? _masterSpawnTimer;
   Map<int, bool> successPulses = {}; // Track which cells are currently pulsing
+  bool _showingSummary = false;
+  Timer? _sessionTimer;
 
   @override
   void initState() {
@@ -303,7 +373,64 @@ class _GameScreenState extends State<GameScreen> {
     
     _scheduleNextSpawn();
     audioEngine.play(settings.soundscape);
+    audioEngine.playStartSound();
+
+    // Start session timer
+    _sessionTimer = Timer(widget.settings.sessionDuration, () {
+      if (mounted) _showSessionSummary();
+    });
   }
+
+  void _showSessionSummary() {
+    if (_showingSummary) return;
+    setState(() => _showingSummary = true);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RepaintBoundary(
+              key: ViralShareService.boundaryKey,
+              child: ViralShareService.buildShareCard(
+                leafCount: metrics.treeGrowthLevel,
+                mode: 'SOLO ZEN',
+                date: '${DateTime.now().day}/${DateTime.now().month}',
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                  child: const Text('FINISH', style: TextStyle(color: Colors.white54)),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: () => ViralShareService.shareSession(
+                    leafCount: metrics.treeGrowthLevel,
+                    mode: 'SOLO ZEN',
+                  ),
+                  icon: const Icon(Icons.share),
+                  label: const Text('SHARE CALM'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF8A66),
+                    foregroundColor: const Color(0xFF1A233A),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   void _scheduleNextSpawn() {
     // Average 7 seconds between spawns. 3 to 11 seconds roughly.
@@ -342,6 +469,7 @@ class _GameScreenState extends State<GameScreen> {
       );
     });
 
+    audioEngine.playSpawnSound();
     targetTimers[newTargetIndex] = Timer(const Duration(seconds: 5), () => _onTimerExpired(newTargetIndex));
   }
 
@@ -420,8 +548,10 @@ class _GameScreenState extends State<GameScreen> {
     widget.progressService.completeSession(recordedMinutes);
 
     _masterSpawnTimer?.cancel();
+    _sessionTimer?.cancel();
     targetTimers.values.forEach((timer) => timer.cancel());
     audioEngine.stop();
+
     audioEngine.dispose();
     super.dispose();
   }

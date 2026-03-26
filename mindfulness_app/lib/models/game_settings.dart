@@ -1,9 +1,8 @@
 enum Soundscape {
-  rainThunder,
-  oceanWaves,
   campfire,
-  forestUnderwater,
-  none,
+  rainfall,
+  campfireMusic,
+  rainfallMusic,
 }
 
 class GameSettings {
@@ -17,7 +16,7 @@ class GameSettings {
     this.gridColumns = 4,
     this.gridRows = 4,
     this.sessionDuration = const Duration(minutes: 5),
-    this.soundscape = Soundscape.none,
+    this.soundscape = Soundscape.campfire,
     this.isMultiplayer = false,
   });
 

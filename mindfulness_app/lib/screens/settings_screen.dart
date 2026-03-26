@@ -6,6 +6,7 @@ import '../services/progress_service.dart';
 import '../services/notification_service.dart';
 import '../services/economy_service.dart';
 import '../widgets/out_of_opals_dialog.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ProgressService progressService;
@@ -20,15 +21,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _selectedColumns = 4;
   int _selectedRows = 4;
   int _selectedDurationMinutes = 5;
-  Soundscape _selectedSoundscape = Soundscape.oceanWaves;
+  Soundscape _selectedSoundscape = Soundscape.campfire;
   TimeOfDay? _selectedZenTime;
   late EconomyService _economyService;
+  late TextEditingController _usernameController;
+  bool _isPublic = false;
+  bool _isSavingUsername = false;
 
   @override
   void initState() {
     super.initState();
     _economyService = EconomyService();
     _economyService.init(); // Boot economy locally
+    _usernameController = TextEditingController();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user != null) {
+      try {
+        final res = await client.from('user_profiles').select('username, is_public').eq('id', user.id).maybeSingle();
+        if (res != null && mounted) {
+          setState(() {
+            _usernameController.text = res['username'] ?? '';
+            _isPublic = res['is_public'] ?? false;
+          });
+        }
+      } catch (e) {
+        debugPrint('Failed to load profile: $e');
+      }
+    }
+  }
+
+  Future<void> _updateUsername(String username) async {
+    if (username.isEmpty) return;
+    setState(() => _isSavingUsername = true);
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user != null) {
+      try {
+        await client.from('user_profiles').update({
+          'username': username.toLowerCase().trim(),
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', user.id);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully 🌿')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Username already taken or invalid.')),
+          );
+        }
+      }
+    }
+    if (mounted) setState(() => _isSavingUsername = false);
+  }
+
+  Future<void> _togglePublic(bool value) async {
+    setState(() => _isPublic = value);
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user != null) {
+      try {
+        await client.from('user_profiles').update({'is_public': value}).eq('id', user.id);
+      } catch (e) {
+        debugPrint('Toggle public failed: $e');
+      }
+    }
   }
 
   int get _currentCost {
@@ -39,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       soundscape: _selectedSoundscape,
     );
     return settings.calculateOpalCost(
-      isPremiumAudio: _selectedSoundscape != Soundscape.none
+      isPremiumAudio: true // All audio is now premium/high-quality
     );
   }
 
@@ -59,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (ctx) => OutOfOpalsDialog(
           economyService: _economyService,
           onAdWatched: () async {
-            await _economyService.addOpals(50);
+            await _economyService.addOpals(25);
             if (mounted) setState(() {}); // Refresh OPAL UI if needed
           },
           onPremiumStarted: () async {
@@ -153,6 +218,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSectionHeader('SOUNDSCAPE'),
                   const SizedBox(height: 16),
                   _buildSoundscapeSelector(),
+
+                  const SizedBox(height: 48),
+
+                  // Viral Identity
+                  _buildSectionHeader('VIRAL IDENTITY'),
+                  const SizedBox(height: 16),
+                  _buildUsernameField(),
+                  const SizedBox(height: 16),
+                  _buildPublicToggle(),
 
                   const SizedBox(height: 48),
                   
@@ -307,66 +381,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSoundscapeSelector() {
-    return Column(
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 1.5,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildSoundCard(Soundscape.none, Icons.volume_off, 'Silent'),
-            _buildSoundCard(Soundscape.rainThunder, Icons.thunderstorm, 'Rain'),
-            _buildSoundCard(Soundscape.oceanWaves, Icons.water, 'Ocean'),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildSoundCard(Soundscape.campfire, Icons.local_fire_department, 'Campfire'),
-            _buildSoundCard(Soundscape.forestUnderwater, Icons.park, 'Forest'),
-            const SizedBox(width: 80), // spacer for balance
-          ],
-        ),
+        _buildSoundCard(Soundscape.campfire, Icons.local_fire_department, 'Campfire', 'Deep crackle'),
+        _buildSoundCard(Soundscape.rainfall, Icons.thunderstorm, 'Rainfall', 'Steady flow'),
+        _buildSoundCard(Soundscape.campfireMusic, Icons.music_note, 'Campfire +', 'Ambient layers'),
+        _buildSoundCard(Soundscape.rainfallMusic, Icons.music_note, 'Rainfall +', 'Ethereal drift'),
       ],
     );
   }
 
-  Widget _buildSoundCard(Soundscape value, IconData icon, String label) {
+  Widget _buildSoundCard(Soundscape value, IconData icon, String label, String subtitle) {
     final isSelected = _selectedSoundscape == value;
     return GestureDetector(
       onTap: () => setState(() => _selectedSoundscape = value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 80,
-        height: 80,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
+          // UI-UX PRO MAX: Premium glassmorphism with subtle borders and shadows
           color: isSelected 
-              ? const Color(0xFFFF8A66).withOpacity(0.2) 
-              : const Color(0xFF222E4A).withOpacity(0.5),
-          borderRadius: BorderRadius.circular(20),
+              ? const Color(0xFFFF8A66).withOpacity(0.25) 
+              : const Color(0xFF222E4A).withOpacity(0.4),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected 
                 ? const Color(0xFFFF8A66) 
-                : Colors.white.withOpacity(0.1),
-            width: isSelected ? 2 : 1,
+                : Colors.white.withOpacity(0.05),
+            width: isSelected ? 2 : 1.5,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: const Color(0xFFFF8A66).withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ] : [],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Icon(
-              icon,
-              color: isSelected ? const Color(0xFFFF8A66) : const Color(0xFFB0BEC4),
-              size: 28,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? const Color(0xFFFF8A66) : const Color(0xFFB0BEC4),
+                  size: 24,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? const Color(0xFFFF8A66) : const Color(0xFFF8F9FA),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: (isSelected ? const Color(0xFFFF8A66) : const Color(0xFFB0BEC4)).withOpacity(0.6),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFFFF8A66) : const Color(0xFFB0BEC4),
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            if (isSelected)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF8A66),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, size: 10, color: Color(0xFF1A233A)),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -422,6 +522,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF222E4A).withAlpha(100),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(20)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.alternate_email, color: Color(0xFFFF8A66), size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _usernameController,
+              onSubmitted: _updateUsername,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+              decoration: const InputDecoration(
+                hintText: 'set_username',
+                hintStyle: TextStyle(color: Colors.white24),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          if (_isSavingUsername)
+            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFF8A66)))
+          else
+            IconButton(
+              icon: const Icon(Icons.check, color: Color(0xFFFF8A66)),
+              onPressed: () => _updateUsername(_usernameController.text),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPublicToggle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Public Forest Profile',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Allow others to see your mindful growth',
+              style: TextStyle(color: Color(0xFFB0BEC4), fontSize: 11),
+            ),
+          ],
+        ),
+        Switch(
+          value: _isPublic,
+          onChanged: _togglePublic,
+          activeColor: const Color(0xFFFF8A66),
+          activeTrackColor: const Color(0xFFFF8A66).withOpacity(0.3),
+        ),
+      ],
     );
   }
 }

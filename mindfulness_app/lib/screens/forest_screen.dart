@@ -4,6 +4,10 @@ import '../models/zen_tree.dart';
 import '../services/progress_service.dart';
 import '../services/economy_service.dart';
 import 'paywall_screen.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 /// Bento-grid screen showing past (legacy) Zen Trees.
 ///
@@ -21,6 +25,7 @@ class ForestScreen extends StatefulWidget {
 class _ForestScreenState extends State<ForestScreen> {
   late EconomyService _economyService;
   bool _isPremium = false;
+  String? _username;
 
   @override
   void initState() {
@@ -31,8 +36,28 @@ class _ForestScreenState extends State<ForestScreen> {
         setState(() {
           _isPremium = _economyService.state.isPremium;
         });
+        _loadUsername();
       }
     });
+  }
+
+  Future<void> _loadUsername() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+      final res = await Supabase.instance.client
+          .from('user_profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+      if (mounted) {
+        setState(() {
+          _username = res['username'] ?? 'user_${user.id.toString().substring(0, 8)}';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading username for forest share: $e');
+    }
   }
 
   @override
@@ -114,9 +139,13 @@ class _ForestScreenState extends State<ForestScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  // Share Button
+                  _buildShareButton(context),
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
 
             // ── Grid ────────────────────────────────────────────
@@ -148,6 +177,84 @@ class _ForestScreenState extends State<ForestScreen> {
                         },
                       ),
                     ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showShareModal(context),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF4CAF50).withOpacity(0.15),
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.3)),
+        ),
+        child: const Icon(Icons.share_rounded, color: Color(0xFF4CAF50), size: 18),
+      ),
+    );
+  }
+
+  void _showShareModal(BuildContext context) {
+    final username = _username ?? 'zen_seeker';
+    final shareUrl = 'https://mindaware.app/forest/$username';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(32),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A233A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'SHARE YOUR FOREST',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: QrImageView(
+                data: shareUrl,
+                version: QrVersions.auto,
+                size: 200.0,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Others can visit your forest at:',
+              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              shareUrl,
+              style: const TextStyle(color: Color(0xFFFF8A66), fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                Share.share('Check out my mindfulness forest on MindAware! 🌿 $shareUrl');
+              },
+              icon: const Icon(Icons.send_rounded),
+              label: const Text('SEND TO FRIENDS'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF8A66),
+                foregroundColor: const Color(0xFF1A233A),
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+              ),
             ),
           ],
         ),

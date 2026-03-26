@@ -1,4 +1,4 @@
-# mindfulness_app — Flutter Project
+# mindaware — Flutter Project
 
 This is the Flutter application sub-project for ZenForest. For full project context, see the [root README](../README.md).
 

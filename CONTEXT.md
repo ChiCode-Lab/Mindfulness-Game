@@ -1,7 +1,7 @@
 # Project Context
 **Goal:** Build a gamified mindfulness application where users identify subtle visual changes in a grid of shapes (Solo and Multiplayer modes).
 *(Note: To increase visual engagement, use 3D items for the grid shapes—e.g. 3D pebbles, leaves, or trees—rendered in Flutter.)*
-**Tech Stack:** React Native / Flutter (Mobile-first)
+**Tech Stack:** React Native / Flutter (Mobile-first), Supabase (Backend)
 
 ## Current Status
 - [x] Initial Context Bridge Setup
@@ -10,17 +10,21 @@
 - [x] Generate UI designs in Stitch based on the prompt
 - [x] Generate `DESIGN.md` from Stitch screen
 - [x] Begin Front-End Implementaton
-- [ ] Implement responsive Flutter app with `ui-ux-pro-max` guidelines
-- [ ] Connect Android emulator and test out the front-end
+- [x] Designed Product-Led Viral Growth System
+- [ ] Implement Fast-Track Auth and Deep Linking App Links
+- [ ] Setup Supabase DB Triggers for Referral Webhooks
 
-## ⚡ CURRENT TASK FOR TERMINAL AGENT
+## ⚡ CURRENT TASK FOR TERMINAL AGENT (@BigPickle)
 **Instructions:**
-1. A new Flutter project `mindfulness_app` was created. Configure the app to run on the Android Emulator.
-2. The user has requested to incorporate **3D elements** (like pebbles, leaves, and trees) in the gameplay grid. **Crucially, these 3D assets must look like the reference image:** a glowing, highly complex translucent/glass material featuring internal color swirls (e.g. deep pink, vibrant orange, purple) and bright light refraction. The user does NOT have `.glb` models. Instead, implement a **programmatic approximation using Three.js**. You will likely need to use a package like `webview_flutter` or `flutter_inappwebview` to host the Three.js canvas, and write custom WebGL shaders to simulate the glowing glass refraction and internal swirling colors.
-3. Consult the generated `DESIGN.md` and use the `ui-ux-pro-max` skills workspace to structure the Flutter UI.
-4. Open the Android emulator and launch the app via `flutter run` / `launch_app`. Test the layout.
+1. Antigravity has handed off **Task 2: Supabase Referral Reward Webhook (DB Trigger)** from the Viral Growth implementation plan (`mindfulness_app/docs/plans/2026-03-26-viral-growth-plan.md`).
+2. Your task is to implement the Postgres Trigger or Supabase Edge Function that handles the "Plant a Tree for Someone" reward loop. 
+3. **Logic needed:** When a new user completes their *first standard solo mindfulness session* (recorded in the `progress` table), identify if they have a `referred_by` value in their `users` profile. If they do:
+   - Deposit +100 Opals to the Inviter's account.
+   - Deposit +50 Opals to the Friend's account.
+   - Spawn a unique "Tree" record in the `legacy_trees` table for the Inviter, setting `gifted_by` to the new user's ID.
+4. **Validation:** Write a failing Database Test (`supabase db test`) first exactly as demonstrated in the Step-By-Step plan. Implement the migration `supabase/migrations/2026_03_26_viral_rewards.sql`. Ensure testing passes and commit your changes.
 
 ## Architecture Notes
 - The interface relies heavily on a soft, ethereal vibe to promote mindfulness.
 - Design elements are minimal, using frosted glass effects (glassmorphism) over a deep, calming background gradient.
-- Core interactive area is a responsive 4x4 or 5x5 shape grid containing 3D models (pebbles/leaves/trees).
+- Supabase integration serves as the source-of-truth for user Opals, Legacy Forest structures, and Co-op Room State.

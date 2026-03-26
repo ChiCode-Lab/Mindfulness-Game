@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import '../services/multiplayer_service.dart';
 import '../services/economy_service.dart';
 import '../models/game_settings.dart';
-import 'coop_game_screen.dart'; // To be created
+import 'coop_game_screen.dart';
+import '../services/deep_link_service.dart';
+
 
 class MultiplayerLobbyScreen extends StatefulWidget {
   final MultiplayerService multiplayerService;
@@ -310,8 +312,31 @@ class _MultiplayerLobbyScreenState extends State<MultiplayerLobbyScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, letterSpacing: 8.0, color: Color(0xFFE0E1DD)),
           ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: () => showInviteSheet(
+              context,
+              roomId: _currentRoomId!,
+              referrerId: widget.multiplayerService.localUserId,
+            ),
+            icon: const Icon(Icons.share_rounded, size: 20),
+            label: const Text('INVITE A FRIEND', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'We\'ll both earn shared leaves and grow faster.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF778DA9), fontSize: 13),
+          ),
         ],
         const Spacer(),
+
         OutlinedButton(
           onPressed: _cancelMatchmaking,
           style: OutlinedButton.styleFrom(

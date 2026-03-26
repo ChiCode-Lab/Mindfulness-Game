@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/economy_service.dart';
 import '../services/subscription_service.dart';
 import '../models/economy_state.dart';
+import 'legal_webview_screen.dart';
 
 class PaywallScreen extends StatefulWidget {
   final EconomyService economyService;
@@ -489,7 +490,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton(
-          onPressed: () {/* navigate to Privacy Policy WebView */},
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LegalWebViewScreen(
+                document: LegalDocument.privacyPolicy,
+              ),
+            ),
+          ),
           child: const Text(
             'Privacy Policy',
             style: TextStyle(color: Color(0xFF778DA9), fontSize: 11),
@@ -500,7 +508,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
           style: TextStyle(color: Color(0xFF778DA9), fontSize: 11),
         ),
         TextButton(
-          onPressed: () {/* navigate to Terms of Use WebView */},
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LegalWebViewScreen(
+                document: LegalDocument.termsOfUse,
+              ),
+            ),
+          ),
           child: const Text(
             'Terms of Use',
             style: TextStyle(color: Color(0xFF778DA9), fontSize: 11),
