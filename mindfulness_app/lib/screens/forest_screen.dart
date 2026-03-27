@@ -26,6 +26,7 @@ class _ForestScreenState extends State<ForestScreen> {
   late EconomyService _economyService;
   bool _isPremium = false;
   String? _username;
+  bool _isPublic = false;
 
   @override
   void initState() {
@@ -47,12 +48,13 @@ class _ForestScreenState extends State<ForestScreen> {
       if (user == null) return;
       final res = await Supabase.instance.client
           .from('user_profiles')
-          .select('username')
+          .select('username, is_public')
           .eq('id', user.id)
           .single();
       if (mounted) {
         setState(() {
           _username = res['username'] ?? 'user_${user.id.toString().substring(0, 8)}';
+          _isPublic = res['is_public'] ?? false;
         });
       }
     } catch (e) {
@@ -206,58 +208,92 @@ class _ForestScreenState extends State<ForestScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(32),
-        decoration: const BoxDecoration(
-          color: Color(0xFF1A233A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'SHARE YOUR FOREST',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: const EdgeInsets.all(32),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A233A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
             ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: QrImageView(
-                data: shareUrl,
-                version: QrVersions.auto,
-                size: 200.0,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'SHARE YOUR FOREST',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2),
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Make Forest Public', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Text('mindaware.app/forest/$username', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                  value: _isPublic,
+                  onChanged: (val) async {
+                    setState(() => _isPublic = val);
+                    setModalState(() => _isPublic = val);
+                    final user = Supabase.instance.client.auth.currentUser;
+                    if (user != null) {
+                      await Supabase.instance.client
+                          .from('user_profiles')
+                          .update({'is_public': val})
+                          .eq('id', user.id);
+                    }
+                  },
+                  activeColor: const Color(0xFFFF8A66),
+                ),
+                const SizedBox(height: 16),
+                if (_isPublic) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: QrImageView(
+                      data: shareUrl,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Others can visit your forest at:',
+                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    shareUrl,
+                    style: const TextStyle(color: Color(0xFFFF8A66), fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Share.share('Check out my mindfulness forest on MindAware! 🌿 $shareUrl');
+                    },
+                    icon: const Icon(Icons.send_rounded),
+                    label: const Text('SEND TO FRIENDS'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF8A66),
+                      foregroundColor: const Color(0xFF1A233A),
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 48),
+                  const Icon(Icons.lock_rounded, color: Colors.white24, size: 64),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Your forest is currently private.\nToggle the switch above to share it with the world.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                  const SizedBox(height: 48),
+                ],
+              ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Others can visit your forest at:',
-              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              shareUrl,
-              style: const TextStyle(color: Color(0xFFFF8A66), fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                Share.share('Check out my mindfulness forest on MindAware! 🌿 $shareUrl');
-              },
-              icon: const Icon(Icons.send_rounded),
-              label: const Text('SEND TO FRIENDS'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF8A66),
-                foregroundColor: const Color(0xFF1A233A),
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-              ),
-            ),
-          ],
-        ),
+          );
+        }
       ),
     );
   }

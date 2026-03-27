@@ -7,6 +7,7 @@ import 'multiplayer_lobby_screen.dart'; // To access Coop route
 import 'forest_screen.dart'; // To access Legacy Forest
 import 'paywall_screen.dart';
 import '../widgets/trial_nudge_banner.dart';
+import '../services/viral_share_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final ProgressService progressService;
@@ -129,8 +130,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1A233A), // Deep Twilight Blue matching stats.html
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
+        child: RepaintBoundary(
+          key: ViralShareService.boundaryKey,
+          child: SingleChildScrollView(
+            child: Column(
             children: [
               const SizedBox(height: 24),
               // Header
@@ -148,7 +151,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         letterSpacing: 1.0,
                       ),
                     ),
-                    Container(
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.ios_share, color: Color(0xFFFF8A65)),
+                          onPressed: () {
+                            ViralShareService.shareSession(
+                              leafCount: widget.progressService.totalMindfulMinutes, // Approximate as leaves
+                              mode: "Focus",
+                            );
+                          },
+                        ),
+                        Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF222E4A).withAlpha(200),
@@ -367,6 +381,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+      ), // RepaintBoundary
     );
   }
 

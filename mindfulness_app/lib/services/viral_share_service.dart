@@ -43,6 +43,14 @@ class ViralShareService {
     }
   }
 
+  /// Generates viral share text based on performance/presence score.
+  static String generateShareText(String name, int presenceScore) {
+    if (presenceScore > 90) {
+      return "$name is thinking of you. They just finished a mindfulness session (Presence: $presenceScore) and wanted to share some calm. Start your journey: MindAware.app/invite/$name";
+    }
+    return "$name ended a deep meditation and thought of you. Tap here: MindAware.app";
+  }
+
   /// Builds the aesthetic shareable card (to be used inside a hidden RepaintBoundary or Dialog)
   static Widget buildShareCard({
     required int leafCount,
