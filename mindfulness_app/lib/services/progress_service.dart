@@ -202,10 +202,10 @@ class ProgressService {
 
       final countRes = await Supabase.instance.client
           .from('progress')
-          .select('id', const FetchOptions(count: CountOption.exact))
+          .select('id')
           .eq('user_id', user.id);
       
-      final isFirstOverall = countRes.count == 0;
+      final isFirstOverall = countRes.isEmpty;
 
       await Supabase.instance.client.from('progress').insert({
         'user_id': user.id,

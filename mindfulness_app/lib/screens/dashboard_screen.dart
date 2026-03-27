@@ -180,13 +180,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
-              
               const SizedBox(height: 32),
               TrialNudgeBanner(economyService: _economyService),
               const SizedBox(height: 16),
