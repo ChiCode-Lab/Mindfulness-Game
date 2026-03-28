@@ -1,16 +1,16 @@
-// Keep this file in .gitignore — contains real Ad Unit IDs.
+// Safe for GitHub - pulls real Ad Unit IDs from environment, defaults to Test Ads.
 // AdMob App ID (ca-app-pub-XXXX~YYYY) must also be updated in AndroidManifest.xml.
 
 class AdConfig {
   // Android production Ad Unit IDs
   static const String androidInterstitialAdUnitId =
-      'ca-app-pub-6093050624313535/5632099309';
+      String.fromEnvironment('ADMOB_ANDROID_INTERSTITIAL', defaultValue: 'ca-app-pub-3940256099942544/1033173712');
   static const String androidRewardedAdUnitId =
-      'ca-app-pub-6093050624313535/7983063921';
+      String.fromEnvironment('ADMOB_ANDROID_REWARDED', defaultValue: 'ca-app-pub-3940256099942544/5224354917');
 
   // iOS production Ad Unit IDs
   static const String iosInterstitialAdUnitId =
-      'ca-app-pub-6093050624313535/5289619848';
+      String.fromEnvironment('ADMOB_IOS_INTERSTITIAL', defaultValue: 'ca-app-pub-3940256099942544/4411468910');
   static const String iosRewardedAdUnitId =
-      'ca-app-pub-6093050624313535/1000122099';
+      String.fromEnvironment('ADMOB_IOS_REWARDED', defaultValue: 'ca-app-pub-3940256099942544/1712485313');
 }

@@ -37,8 +37,8 @@ void main() async {
   await AdService().init();
 
   await Supabase.initialize(
-    url: 'https://vnyjjdvobvrmsqwpdvpco.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZueWpkdm9idnJtc3F3cGR2cGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTkwNjQsImV4cCI6MjA4OTg3NTA2NH0.i5sgtH2I1X62qj9yR7HnVlU3Fd-a9z7fp2q260ZXTio',
+    url: const String.fromEnvironment('SUPABASE_URL', defaultValue: 'https://placeholder.supabase.co'),
+    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: 'placeholder_key'),
   );
 
   final progressService = ProgressService();
