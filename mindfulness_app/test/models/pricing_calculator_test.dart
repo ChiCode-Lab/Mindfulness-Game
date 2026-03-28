@@ -8,7 +8,7 @@ void main() {
         gridColumns: 3,
         gridRows: 3,
         sessionDuration: const Duration(minutes: 5),
-        soundscape: Soundscape.none,
+        soundscape: Soundscape.campfire,
         isMultiplayer: false,
       );
       // Formula: (cols * rows * 0.5) + (minutes * 5.0)
@@ -21,7 +21,7 @@ void main() {
         gridColumns: 4,
         gridRows: 4,
         sessionDuration: const Duration(minutes: 10),
-        soundscape: Soundscape.none,
+        soundscape: Soundscape.campfire,
         isMultiplayer: false,
       );
       // (4 * 4 * 0.5) + (10 * 5) = 8 + 50 = 58 Opals
@@ -33,7 +33,7 @@ void main() {
         gridColumns: 3,
         gridRows: 3,
         sessionDuration: const Duration(minutes: 5),
-        soundscape: Soundscape.none,
+        soundscape: Soundscape.campfire,
         isMultiplayer: true,
       );
       // Base is 29.5. Cooperative is 1.3x → 38.35 → 38 Opals
@@ -45,7 +45,7 @@ void main() {
         gridColumns: 3,
         gridRows: 3,
         sessionDuration: const Duration(minutes: 5),
-        soundscape: Soundscape.oceanWaves,
+        soundscape: Soundscape.campfire,
         isMultiplayer: false,
       );
       // Base is 29.5. Premium Audio adds flat 20 Opals → 49.5 → 50 Opals

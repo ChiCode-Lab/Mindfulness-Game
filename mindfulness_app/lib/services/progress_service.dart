@@ -80,6 +80,9 @@ class ProgressService {
     return (dailyPresenceLevel / 100.0).clamp(0.5, 1.0);
   }
 
+  /// Daily presence level as a ratio between 0.0 and 1.0.
+  double get dailyPresenceRatio => dailyPresenceLevel / 100.0;
+
   /// Record a +1 (Success) point in the presence FIFO.
   Future<void> recordHit() async {
     await _addPresencePoint(1);
