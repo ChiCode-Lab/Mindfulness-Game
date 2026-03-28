@@ -47,7 +47,13 @@ jobs:
         run: flutter test
         continue-on-error: true   # Don't block the build if tests fail
 
-      # ── 6. Build debug APK ───────────────────────────────────────────────────
+      # ── 6. Inject google-services.json from GitHub Secret ───────────────────
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > mindfulness_app/android/app/google-services.json
+
+      # ── 7. Build debug APK ───────────────────────────────────────────────────
       - name: Build debug APK
         working-directory: mindfulness_app
         run: flutter build apk --debug --no-tree-shake-icons

@@ -58,11 +58,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Not Enough Opals'), findsOneWidget);
-    expect(find.text('Watch Ad (+50 Opals)'), findsOneWidget);
+    expect(find.text('Watch Ad (+25 Opals)'), findsOneWidget);
     expect(find.text('Start 5-Day Free Trial'), findsOneWidget);
 
     // Tap Ad button
-    await tester.tap(find.text('Watch Ad (+50 Opals)'));
+    await tester.tap(find.text('Watch Ad (+25 Opals)'));
     await tester.pumpAndSettle();
     
     expect(adWatched, true);

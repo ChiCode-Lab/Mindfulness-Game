@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mindaware/services/deep_link_service.dart';
 
 void main() {
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
   group('DeepLinkService', () {
     test('Parses invite room id and referral id from mindaware.app/invite url', () {
       final service = DeepLinkService();
